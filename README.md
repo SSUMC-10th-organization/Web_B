@@ -6,7 +6,7 @@ SSUMC 10기 Web 스터디 B조
 
 |                 뭉크                  |                   토니                    |                  다니엘                  |                  스텔라                  |                 서리                  |
 | :-----------------------------------: | :---------------------------------------: | :------------------------------------: | :------------------------------------: | :-----------------------------------: |
-| [강병민](https://github.com/ByungMMin) | [유승지](https://github.com/yseungji) | [임정빈](https://github.com/Jungbin906)| [이지현](https://github.com/Ljihyeon) | [최서정](https://github.com/chl0150)|
+| [강병민](https://github.com/ByungMMin) | [유승지](https://github.com/yseungji) | [임정빈](https://github.com/Jungbin906)| [이지현](https://github.com/jhyunniee) | [최서정](https://github.com/chl0150)|
 
 <br/>
 
