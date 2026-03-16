@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JungBin ToDo</title>
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_11-01@1.0/NanumSquareNeo-Variable.woff2');
+    * {
+      margin: 0;
+      box-sizing: border-box;
+    }
+    body {
+        height: 100vh;
+        width : 100vw;
+        margin : 0;
+    }
+    .title {
+        font-family: 'NanumSquareNeo-Variable', sans-serif;
+        top : 100px;
+        font-size: 50px;
+    }
+    .container{
+        height: 100%;       /* body의 높이를 그대로 물려받음 */
+        position: relative; /* 이제 내 자식들은 나를 기준으로 움직여라! */
+        display: flex;      /* 정렬을 더 편하게 하기 위해 flex 사용 추천 */
+        flex-direction: column; /* 자식들을 세로로 나열 */
+        align-items: center;    /* 가로 중앙 정렬 */
+        padding-top : 10%;
+    }
+    input {
+        display: block;    /* 한 줄을 다 차지하게 해서 제목 아래로 내리기 */
+        margin-top: 50px;  /* 제목과의 간격 */
+        width: 40%;       /* 부모(title) 너비만큼 채우기 */
+        padding: 10px;     /* 박스 안쪽 여유 공간 */
+        border: 2px solid #333; /* 테두리 두께와 색상 */
+        border-radius: 8px;    /* 모서리를 둥글게 */
+        font-size: 1rem;
+    }
+    .todo-group{
+        display : flex;
+        padding : 50px;
+        gap : 200px;
+    }
+    .line {
+        width: 80%;      /* 가로 길이 */
+        height: 1px;      /* 선의 두께 */
+        background-color: gray; /* 선의 색상 */
+        margin: 20px 0;   /* 위아래 여백 */
+    }
+    .todo, .done {
+        text-align : center;
+        flex: 1;      /* 부모 너비를 1/n로 똑같이 나눠 가짐 */
+        width: 0;     /* 글자가 길어져도 무시하고 flex 비율을 지키게 하는 마법의 코드 */
+        min-width: 300px; /* 너무 좁아지면 안 되니까 최소 너비는 보장 */
+        }
+    ul {
+        list-style : none;
+        padding-top : 20px;
+        padding-left : 0;
+
+    }
+    li {
+        word-break: break-all; /* 단어가 길어도 박스 끝에서 줄바꿈 */
+        text-align : left;
+        margin-bottom : 30px;
+        border-bottom : 5px solid #ddd;
+        padding-bottom : 10px;
+        display: flex;
+        justify-content: space-between; /* 글자는 왼쪽 끝, 버튼은 오른쪽 끝! */
+        align-items: center;
+    }
+
+    li span {
+    flex: 1;          /* 남는 공간을 다 차지하되 */
+    max-width: 70%;   /* 아무리 길어도 전체의 70%는 넘지 마! */
+    word-break: break-all; /* 벽에 부딪히면 다음 줄로 넘어가기 */
+    }
+    /* 해야 할 일의 '완료' 버튼 */
+    .todo li button {
+        background-color: #4caf50; /* 초록초록한 느낌 */
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-weight: bold;
+    }
+
+    /* 완료 한 일의 '삭제' 버튼 */
+    .done li button {
+        background-color: #ff4d4d; /* 경고 느낌의 빨간색 */
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">★JB ToDo★</div>
+        <div class="line"></div>
+        <input type="text" id="user-input" placeholder="계획을 입력하세요. [ENTER]를 눌러 계획 저장">
+        <div class="todo-group">
+            <div class="todo">
+                <h2>해야 할 일</h2>
+                <ul id="todo-list">
+                    
+                </ul>
+
+            </div>
+            <div class="done">
+                <h2>완료 한 일</h2>
+                <ul id="done-list">
+                    
+                </ul> 
+
+            </div>
+        </div>
+    </div>
+</body>
+
+<script>
+    const input = document.getElementById('user-input');
+    const todo = document.getElementById('todo-list');
+    const done = document.getElementById('done-list');
+
+    input.addEventListener('keypress', function(e) {
+        if(e.key=="Enter" && input.value!=""){
+            const newLi = document.createElement('li'); // 새 틀 제작
+            const newSp = document.createElement('Span'); // 내부 글
+            const newBtn = document.createElement('button'); // 버튼
+            newSp.innerText = input.value; // 입력한 내용 옮기기
+            newBtn.innerText = "완료" // 버튼 초기화
+            newLi.appendChild(newSp);
+            newLi.appendChild(newBtn); // li에 span과 button 자식으로
+            todo.appendChild(newLi); // 그걸 todo에 넣기
+            input.value = "";
+            newBtn.onclick = function() { // 완료 버튼 누르면
+                newBtn.innerText = "삭제"
+                newBtn.onclick = function(){ // 삭제 버튼 누르면
+                    done.removeChild(newLi);
+                }
+                done.appendChild(newLi); // done에 추가하기
+            };
+        }
+    });
+</script>
+
+</html>
