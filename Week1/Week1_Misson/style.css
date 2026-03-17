@@ -1,0 +1,88 @@
+@import url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_11-01@1.0/NanumSquareNeo-Variable.woff2');
+    * {
+      margin: 0;
+      box-sizing: border-box;
+    }
+    body {
+        height: 100vh;
+        width : 100vw;
+        margin : 0;
+    }
+    .title {
+        font-family: 'NanumSquareNeo-Variable', sans-serif;
+        top : 100px;
+        font-size: 50px;
+    }
+    .container{
+        height: 100%;       /* body의 높이를 그대로 물려받음 */
+        position: relative; /* 이제 내 자식들은 나를 기준으로 움직여라! */
+        display: flex;      /* 정렬을 더 편하게 하기 위해 flex 사용 추천 */
+        flex-direction: column; /* 자식들을 세로로 나열 */
+        align-items: center;    /* 가로 중앙 정렬 */
+        padding-top : 10%;
+    }
+    input {
+        display: block;    /* 한 줄을 다 차지하게 해서 제목 아래로 내리기 */
+        margin-top: 50px;  /* 제목과의 간격 */
+        width: 40%;       /* 부모(title) 너비만큼 채우기 */
+        padding: 10px;     /* 박스 안쪽 여유 공간 */
+        border: 2px solid #333; /* 테두리 두께와 색상 */
+        border-radius: 8px;    /* 모서리를 둥글게 */
+        font-size: 1rem;
+    }
+    .todo-group{
+        display : flex;
+        padding : 50px;
+        gap : 200px;
+    }
+    .line {
+        width: 80%;      /* 가로 길이 */
+        height: 1px;      /* 선의 두께 */
+        background-color: gray; /* 선의 색상 */
+        margin: 20px 0;   /* 위아래 여백 */
+    }
+    .todo, .done {
+        text-align : center;
+        flex: 1;      /* 부모 너비를 1/n로 똑같이 나눠 가짐 */
+        width: 0;     /* 글자가 길어져도 무시하고 flex 비율을 지키게 하는 마법의 코드 */
+        min-width: 300px; /* 너무 좁아지면 안 되니까 최소 너비는 보장 */
+        }
+    ul {
+        list-style : none;
+        padding-top : 20px;
+        padding-left : 0;
+
+    }
+    li {
+        word-break: break-all; /* 단어가 길어도 박스 끝에서 줄바꿈 */
+        text-align : left;
+        margin-bottom : 30px;
+        border-bottom : 5px solid #ddd;
+        padding-bottom : 10px;
+        display: flex;
+        justify-content: space-between; /* 글자는 왼쪽 끝, 버튼은 오른쪽 끝! */
+        align-items: center;
+    }
+
+    li span {
+    flex: 1;          /* 남는 공간을 다 차지하되 */
+    max-width: 70%;   /* 아무리 길어도 전체의 70%는 넘지 마! */
+    word-break: break-all; /* 벽에 부딪히면 다음 줄로 넘어가기 */
+    }
+    /* 해야 할 일의 '완료' 버튼 */
+    .todo li button {
+        background-color: #4caf50; /* 초록초록한 느낌 */
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-weight: bold;
+    }
+
+    /* 완료 한 일의 '삭제' 버튼 */
+    .done li button {
+        background-color: #ff4d4d; /* 경고 느낌의 빨간색 */
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-weight: bold;
+    }
