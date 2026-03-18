@@ -59,3 +59,5 @@ function completeTodo(
 function deleteTodo(itemDiv: HTMLDivElement): void {
   doneList.removeChild(itemDiv);
 }
+
+export {};

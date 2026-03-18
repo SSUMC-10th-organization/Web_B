@@ -1,90 +1,90 @@
 body {
-  background-color: #b5d3f8;
-  font-family: sans-serif;
-  display: flex;
-  justify-content: center;
-  margin: 0;
-  padding-top: 50px;
-  color: #111;
+	background-color: #b5d3f8;
+	font-family: sans-serif;
+	display: flex;
+	justify-content: center;
+	margin: 0;
+	padding-top: 50px;
+	color: #111;
 }
 
 .container {
-  width: 800px;
-  text-align: center;
+	width: 800px;
+	text-align: center;
 }
 
 header h1 {
-  font-size: 40px;
-  margin-bottom: 40px;
+	font-size: 40px;
+	margin-bottom: 40px;
 }
 
 .main-divider {
-  border: 0;
-  height: 1px;
-  background: #d0d7e0;
-  margin-bottom: 40px;
+	border: 0;
+	height: 1px;
+	background: #d0d7e0;
+	margin-bottom: 40px;
 }
 
 #todo-input {
-  width: 100%;
-  padding: 18px;
-  font-size: 16px;
-  border: 1px solid#333;
-  box-sizing: border-box;
-  margin-bottom: 50px;
-  outline: none;
+	width: 100%;
+	padding: 18px;
+	font-size: 16px;
+	border: 1px solid #333;
+	box-sizing: border-box;
+	margin-bottom: 50px;
+	outline: none;
 }
 
 #todo-input::placeholder {
-  color: #cbd3dc;
-  font-style: italic;
+	color: #cbd3dc;
+	font-style: italic;
 }
 
 .lists-wrapper {
-  display: flex;
-  justify-content: space-between;
-  gap: 60px;
+	display: flex;
+	justify-content: space-between;
+	gap: 60px;
 }
 
 .list-section {
-  flex: 1;
+	flex: 1;
 }
 
 .list-section h2 {
-  font-size: 18px;
-  margin-bottom: 10px;
+	font-size: 18px;
+	margin-bottom: 10px;
 }
 
 .sub-divider {
-  border: 0;
-  height: 2px;
-  background: #d0d7e0;
-  margin-bottom: 20px;
-  width: 100%;
+	border: 0;
+	height: 2px;
+	background: #d0d7e0;
+	margin-bottom: 20px;
+	width: 100%;
 }
 
 .item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 0;
-  border-bottom: 2px solid #e2e8f0;
-  font-weight: bold;
-  font-size: 18px;
-  transition: all 0.2e=s ease-in-out;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 15px 0;
+	border-bottom: 2px solid #e2e8f0;
+	font-weight: bold;
+	font-size: 18px;
+	transition: all 0.2s ease-in-out;
 }
 
 .btn {
-  background-color: #dbe4f0;
-  border: none;
-  padding: 6px 12px;
-  cursor: pointer;
-  font-size: 13px;
-  border-radius: 3px;
-  font-weight: bold;
-  color: #333;
+	background-color: #dbe4f0;
+	border: none;
+	padding: 6px 12px;
+	cursor: pointer;
+	font-size: 13px;
+	border-radius: 3px;
+	font-weight: bold;
+	color: #333;
 }
 
 .btn:hover {
-  background-color: #cdd8e6;
+	background-color: #cdd8e6;
 }
