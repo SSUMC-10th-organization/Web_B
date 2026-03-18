@@ -85,6 +85,12 @@ section {
     border-bottom: 2px solid #eee;
 }
 
+/* li 태그의 기본 bullet 제거 */
+ul {
+    list-style: none;
+    padding: 0;
+}
+
 .item {
     display: flex;
     justify-content: center;

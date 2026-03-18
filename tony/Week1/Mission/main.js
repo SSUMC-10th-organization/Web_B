@@ -34,3 +34,4 @@ function moveToDone(item, text) {
     doneItems.appendChild(doneItem);
 }
 btn.addEventListener('click', makeList);
+

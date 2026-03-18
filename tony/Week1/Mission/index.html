@@ -11,21 +11,21 @@
         <h1>SEUNGJITODO</h1>
     </header>
     <main>
-        <div class="input-area">
+        <form class="input-area">
             <input type="text" id="inputText" placeholder="할 일 입력">
-            <button id="btn">할 일 추가</button>
-        </div>
+            <button id="btn" type="button">할 일 추가</button>
+        </form>
 
-        <div class="todolist">
+        <article class="todolist">
             <section>
-                <div class="section-title">할 일</div>
-                <div id="todoItems"></div>
+                <h2 class="section-title">할 일</h2>
+                <ul id="todoItems"></ul>
             </section>
             <section>
-                <div class="section-title">완료</div>
-                <div id="doneItems"></div>
+                <h2 class="section-title">완료</h2>
+                <ul id="doneItems"></ul>
             </section>
-        </div>
+        </article>
     </main>
 
     <script src="main.js"></script>
