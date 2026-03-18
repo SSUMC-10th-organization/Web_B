@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>ToDoList</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>SEUNGJITODO</h1>
+    </header>
+    <main>
+        <div class="input-area">
+            <input type="text" id="inputText" placeholder="할 일 입력">
+            <button id="btn">할 일 추가</button>
+        </div>
+
+        <div class="todolist">
+            <section>
+                <div class="section-title">할 일</div>
+                <div id="todoItems"></div>
+            </section>
+            <section>
+                <div class="section-title">완료</div>
+                <div id="doneItems"></div>
+            </section>
+        </div>
+    </main>
+
+    <script src="main.js"></script>
+</body>
+</html>
