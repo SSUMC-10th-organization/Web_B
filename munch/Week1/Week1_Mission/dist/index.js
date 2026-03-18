@@ -1,69 +1,45 @@
 "use strict";
 const todoInput = document.getElementById("todo-input");
-const todoForm = document.getElementById("todo-form");
 const todoList = document.getElementById("todo-list");
 const doneList = document.getElementById("done-list");
-let todos = [];
-let doneTasks = [];
-const renderTasks = () => {
-    todoList.innerHTML = "";
-    doneList.innerHTML = "";
-    todos.forEach((todo) => {
-        const li = createTodoElement(todo, false);
-        todoList.appendChild(li);
-    });
-    doneTasks.forEach((todo) => {
-        const li = createTodoElement(todo, true);
-        doneList.appendChild(li);
-    });
-};
-const getTodoText = () => {
-    return todoInput.value.trim();
-};
-const addTodo = (text) => {
-    todos.push({ id: Date.now(), text });
-    todoInput.value = "";
-    renderTasks();
-};
-const completeTodo = (todo) => {
-    todos = todos.filter((t) => t.id !== todo.id);
-    doneTasks.push(todo);
-    renderTasks();
-};
-const deleteTodo = (todo) => {
-    doneTasks = doneTasks.filter((t) => t.id !== todo.id);
-    renderTasks();
-};
-const createTodoElement = (todo, isDone) => {
-    const li = document.createElement("li");
-    li.classList.add("render-container__item");
-    li.textContent = todo.text;
-    const button = document.createElement("button");
-    button.classList.add("render-container__item-button");
-    if (isDone) {
-        button.textContent = "삭제";
-        button.style.backgroundColor = "#dc3545";
-    }
-    else {
-        button.textContent = "완료";
-        button.style.backgroundColor = "#28a745";
-    }
-    button.addEventListener("click", () => {
-        if (isDone) {
-            deleteTodo(todo);
+todoInput.addEventListener("keydown", handelInput);
+function handelInput(event) {
+    if (event.key === "Enter") {
+        const taskText = todoInput.value.trim();
+        if (taskText === "") {
+            alert("할 일을 입력해주세요.");
+            return;
         }
-        else {
-            completeTodo(todo);
-        }
-    });
-    li.appendChild(button);
-    return li;
-};
-todoForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const text = getTodoText();
-    if (text) {
-        addTodo(text);
+        addTodo(taskText);
+        todoInput.value = "";
     }
-});
-renderTasks();
+}
+function addTodo(text) {
+    const itemDiv = document.createElement("div");
+    itemDiv.className = "item";
+    const textSpan = document.createElement("span");
+    textSpan.textContent = text;
+    const actionBtn = document.createElement("button");
+    actionBtn.className = "btn";
+    actionBtn.textContent = "완료";
+    actionBtn.addEventListener("click", () => {
+        completeTodo(itemDiv, actionBtn);
+    });
+    itemDiv.appendChild(textSpan);
+    itemDiv.appendChild(actionBtn);
+    todoList.appendChild(itemDiv);
+}
+function completeTodo(itemDiv, actionBtn) {
+    todoList.removeChild(itemDiv);
+    itemDiv.classList.add("completed");
+    actionBtn.textContent = "삭제";
+    const deleteBtn = actionBtn.cloneNode(true);
+    deleteBtn.addEventListener("click", () => {
+        deleteTodo(itemDiv);
+    });
+    itemDiv.replaceChild(deleteBtn, actionBtn);
+    doneList.appendChild(itemDiv);
+}
+function deleteTodo(itemDiv) {
+    doneList.removeChild(itemDiv);
+}
