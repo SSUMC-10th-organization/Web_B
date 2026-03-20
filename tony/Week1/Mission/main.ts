@@ -40,7 +40,7 @@ function moveToDone(item: HTMLDivElement, text: string): void {
     deleteBtn.addEventListener('click', () => doneItems.removeChild(doneItem));
 
     doneItem.appendChild(span);
-    doneItem.appendChild(deleteBtn);
+    doneItem.appendChild(deleteBtn); 
     doneItems.appendChild(doneItem);
 }
 

@@ -29,7 +29,7 @@ function moveToDone(item, text) {
     deleteBtn.textContent = '삭제';
     deleteBtn.className = 'delete-btn';
     deleteBtn.addEventListener('click', function () { return doneItems.removeChild(doneItem); });
-    doneItem.appendChild(span);
+    doneItem.appendChild(span) ;
     doneItem.appendChild(deleteBtn);
     doneItems.appendChild(doneItem);
 }
