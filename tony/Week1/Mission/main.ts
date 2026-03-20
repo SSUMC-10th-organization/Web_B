@@ -1,4 +1,4 @@
-export {};  // 추가
+export {};
 
 const btn = document.querySelector("#btn") as HTMLButtonElement;
 const inputText = document.querySelector("#inputText") as HTMLInputElement;
