@@ -1,111 +1,121 @@
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
+/* ===== 기본 스타일 ===== */
 body {
-  margin: 0;
+	font-family: Arial, sans-serif;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100vh;
+	background-color: #eef2f3;
+	margin: 0;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+/* ===== Todo 컨테이너 ===== */
+.todo-container {
+	background: white;
+	padding: 20px;
+	border-radius: 12px;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+	width: 350px;
+	text-align: center;
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
+/* ===== 제목 ===== */
+.todo-container__header {
+	font-size: 24px;
+	margin-bottom: 16px;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+/* ===== 입력 폼 ===== */
+.todo-container__form {
+	display: flex;
+	gap: 10px;
+	margin-bottom: 20px;
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+.todo-container__input {
+	flex: 1;
+	padding: 8px;
+	border: 1px solid #ccc;
+	border-radius: 6px;
+	font-size: 14px;
+}
+
+.todo-container__button {
+	background-color: #28a745;
+	color: white;
+	border: none;
+	padding: 8px 12px;
+	cursor: pointer;
+	border-radius: 6px;
+	transition: background-color 0.3s ease;
+}
+
+.todo-container__button:hover {
+	background-color: #218838;
+}
+
+/* ===== 리스트 컨테이너 ===== */
+.render-container {
+	display: flex;
+	justify-content: space-between;
+	gap: 20px;
+}
+
+/* ===== 리스트 ===== */
+.render-container__section {
+	width: 100%;
+	text-align: left;
+}
+
+.render-container__title {
+	font-size: 18px;
+	margin-bottom: 10px;
+
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+}
+
+.render-container__list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+/* ===== 리스트 아이템 ===== */
+.render-container__item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+
+	padding: 8px;
+	border-bottom: 1px solid #ddd;
+	background: #f9f9f9;
+	border-radius: 6px;
+	margin-bottom: 6px;
+	width: 100%; /* Make sure the item takes full available width */
+}
+
+.render-container__item-text {
+	flex: 1;
+
+	white-space: nowrap; /* Prevent text from wrapping */
+	overflow: hidden; /* Hide any overflow */
+	text-overflow: ellipsis; /* Add '...' when text overflows */
+	display: block; /* Ensure it's treated as a block for the overflow to work */
+}
+
+.render-container__item-button {
+	background-color: #dc3545;
+	color: white;
+	border: none;
+	padding: 6px 10px;
+	cursor: pointer;
+	border-radius: 6px;
+	font-size: 12px;
+	transition: background-color 0.3s ease;
+}
+
+.render-container__item-button:hover {
+	background-color: #c82333;
 }

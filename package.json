@@ -7,7 +7,7 @@
 		"fix": "biome check --write .",
 		"format": "biome format --write .",
 		"lint": "biome lint .",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc -b --noEmit"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.7",
