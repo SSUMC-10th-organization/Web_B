@@ -1,13 +1,13 @@
-import './index.css'
-import Todo from './components/Todo';
-import { TodoProvider } from './context/TodoContext';
+import "./index.css";
+import Todo from "./components/Todo";
+import { TodoProvider } from "./context/TodoContext";
 
 function App() {
-    return (
-        <TodoProvider>
-            <Todo />
-        </TodoProvider>
-    );
+	return (
+		<TodoProvider>
+			<Todo />
+		</TodoProvider>
+	);
 }
 
 export default App;
