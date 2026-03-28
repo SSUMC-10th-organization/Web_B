@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(recall)",
+      "Bash(gh pr:*)",
+      "Bash(gh run:*)"
+    ]
+  }
+}
