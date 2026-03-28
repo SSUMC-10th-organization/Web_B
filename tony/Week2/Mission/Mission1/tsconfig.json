@@ -15,5 +15,13 @@
 		"noImplicitReturns": true,
 		"noFallthroughCasesInSwitch": true
 	},
-	"include": ["src"]
+	"include": ["**/*.ts", "**/*.tsx"],
+  "exclude": [
+    "node_modules",
+    "**/node_modules",
+    "tony/Week2/Mission1",
+    "tony/Week2/Mission2",
+    "tony/Week2/Practice",
+    "tony/Week3"
+  ]
 }
