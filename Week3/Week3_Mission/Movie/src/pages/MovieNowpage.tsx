@@ -4,10 +4,10 @@ import type { Movie, MovieResponse } from '../types/movies';
 import axios from 'axios';
 import Loading from '../components/Loading';
 
-const MoviesPage = () => {
+const MoviesNowPage = () => {
   // 주소창의 쿼리(?page=N)를 관리하는 훅
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isloading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   
   // 현재 페이지 번호 추출 (숫자로 변환, 기본값 1)
   const currentPage = Number(searchParams.get('page')) || 1;
@@ -17,10 +17,11 @@ const MoviesPage = () => {
   useEffect(() => {
     const fetchMovies = async () => {
         setIsLoading(true);
-      // API 주소: popular 엔드포인트 유지 + 동적 페이지 번호 적용
+      // URL 마지막에 하드코딩된 page=1 대신 ${currentPage} 삽입
+      
       try{
       const { data } = await axios.get<MovieResponse>(
-        `https://api.themoviedb.org/3/movie/popular?language=ko-KR&page=${currentPage}`,
+        `https://api.themoviedb.org/3/movie/now_playing?language=ko-KR&page=${currentPage}`,
         {
           headers: {
             Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmYTU2MDc3MThmZWQwZjFlYTI3NmZiNTc3NDVmZmRiNSIsIm5iZiI6MTc3NDc3NTI3OS4wNzgsInN1YiI6IjY5YzhlYmVmNTUwMjViZWFkYTAxZTVhNCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.xUD0btJOl74kkYj-VJsIXeLFI8rnV-6yQTqluhxk4Uo`,
@@ -39,24 +40,23 @@ const MoviesPage = () => {
     };
 
     fetchMovies();
-  }, [currentPage]); // currentPage가 바뀔 때마다 데이터 다시 호출
- 
+  }, [currentPage]); // currentPage가 바뀔 때마다 useEffect가 다시 실행됨
 
-  // 6. 페이지 변경 핸들러 (MoviesNowPage와 동일 로직)
+  // 페이지 변경 핸들러
   const handlePageChange = (step: number) => {
     const nextPage = currentPage + step;
-    if (nextPage < 1) return; 
-    setSearchParams({ page: String(nextPage) }); 
+    if (nextPage < 1) return; // 1페이지 미만 방지
+    setSearchParams({ page: String(nextPage) }); // 주소창 업데이트 -> useEffect 실행 유도
   };
-
-   if(isloading)
-    return <Loading />;
+    if(isLoading)
+        return(
+            <Loading/>
+        )
 
   return (
     <div className="bg-white min-h-screen p-8">
       <div className="max-w-[1000px] mx-auto">
-        
-  
+        {/* 영화 그리드 판 */}
         <div className="grid grid-cols-6 gap-4">
           {movies.map((movie) => (
             <div 
@@ -74,10 +74,9 @@ const MoviesPage = () => {
           ))}
         </div>
 
-
+        {/*페이지네이션 버튼 섹션 추가 */}
         <div className="flex justify-center items-center gap-12 mt-16 mb-10">
-          <button 
-            type="button"
+          <button type="button"
             onClick={() => handlePageChange(-1)}
             disabled={currentPage === 1}
             className="px-8 py-3 bg-purple-200 text-purple-900 font-bold rounded-2xl 
@@ -90,8 +89,7 @@ const MoviesPage = () => {
             {currentPage} Page
           </span>
 
-          <button 
-            type="button"
+          <button type="button"
             onClick={() => handlePageChange(1)}
             className="px-8 py-3 bg-purple-200 text-purple-900 font-bold rounded-2xl 
                        hover:bg-purple-300 transition-all shadow-md"
@@ -104,4 +102,4 @@ const MoviesPage = () => {
   );
 };
 
-export default MoviesPage;
+export default MoviesNowPage;
