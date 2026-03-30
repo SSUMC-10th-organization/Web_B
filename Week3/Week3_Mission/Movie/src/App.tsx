@@ -3,6 +3,7 @@ import RootLayout from './layout/root-layout';
 import MoviesPage from './pages/Moviepage'
 import HomePage from './pages/Homepage';
 import MoviesNowPage from './pages/MovieNowpage';
+import MovieDetailPage from './pages/MovieDetailPage';
 
 // 1. React Router에서 필요한 함수/컴포넌트를 import
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -21,14 +22,10 @@ const router = createBrowserRouter([
         index : true,
         element : <HomePage />
       },
-      {
-        path : 'movies/:moviesId',
-        element : <MoviesPage />
-      },
-      {
-        path : 'now/:nowId',
-        element : <MoviesNowPage />
-      }
+      { path : 'movies', element : <MoviesPage /> },
+      { path : 'movies/:movieId', element : <MovieDetailPage /> },
+      { path : 'now', element : <MoviesNowPage /> },
+      { path : 'now/:movieId', element : <MovieDetailPage /> }
     ]
    },
   { path: '*', element: <NotFound /> }, // 가장 마지막에 배치

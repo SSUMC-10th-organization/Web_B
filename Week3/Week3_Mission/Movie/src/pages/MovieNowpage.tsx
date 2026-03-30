@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import type { Movie, MovieResponse } from '../types/movies';
 import axios from 'axios';
 import Loading from '../components/Loading';
+import { Link } from 'react-router-dom';
 
 const MoviesNowPage = () => {
   // 주소창의 쿼리(?page=N)를 관리하는 훅
@@ -59,8 +60,9 @@ const MoviesNowPage = () => {
         {/* 영화 그리드 판 */}
         <div className="grid grid-cols-6 gap-4">
           {movies.map((movie) => (
-            <div 
-              key={movie.id} 
+            <Link 
+              key={movie.id}
+              to={`/now/${movie.id}`} 
               className="relative aspect-[2/3] overflow-hidden rounded-2xl bg-gray-900 group cursor-pointer"
             >
               <img 
@@ -70,7 +72,7 @@ const MoviesNowPage = () => {
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
