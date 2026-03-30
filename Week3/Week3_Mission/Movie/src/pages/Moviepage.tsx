@@ -52,7 +52,7 @@ const MoviesPage = () => {
 		<div className="bg-white min-h-screen p-8">
 			<div className="max-w-[1000px] mx-auto">
 				<div className="grid grid-cols-6 gap-4">
-					{movies.map((movie) => (
+					{movies.map((movie:Movie) => (
 						<Link
 							key={movie.id}
 							to={`/movies/${movie.id}`}
