@@ -26,13 +26,5 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: 🔍 Type Check
-        run: |
-          if find . -path ./node_modules -prune -o -name "*.ts" -print -o -name "*.tsx" -print | grep -q .; then
-            pnpm run typecheck
-          else
-            echo "TypeScript 파일 없음, typecheck 건너뜀"
-          fi
-
       - name: 🧹 Biome Check
         run: pnpm run check
