@@ -1,27 +1,17 @@
 {
-	"compilerOptions": {
-		"jsx": "react-jsx",
-		"jsxImportSource": "react",
-		"target": "ESNext",
-		"module": "ESNext",
-<<<<<<< HEAD
-		"moduleResolution": "bundler",
-=======
-		"moduleResolution": "node",
-		"jsx": "react-jsx",
->>>>>>> 24f7d5c4fc6737fde98a6a64eabdd6b8a030847d
-		"strict": true,
-		"skipLibCheck": true,
-		"esModuleInterop": true,
-		"allowJs": true,
-		"noEmit": true,
-		"isolatedModules": true,
-	},
-	"include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
-	"exclude": ["node_modules"]
-<<<<<<< HEAD
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "noEmit": true,
+    "isolatedModules": true
+  },
+  "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+  "exclude": ["node_modules"]
 }
-=======
-}
-
->>>>>>> 24f7d5c4fc6737fde98a6a64eabdd6b8a030847d
