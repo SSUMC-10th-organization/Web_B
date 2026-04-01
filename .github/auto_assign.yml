@@ -1,0 +1,9 @@
+reviewers:
+  - taegeon2
+  - Jungbin906
+  - jhyunniee
+  - yseungji
+  - ByungMMin
+  - chl0150
+
+numberOfReviewers: 0  # 0 = 전원 배정 (PR 작성자는 자동으로 제외됨)
