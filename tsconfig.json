@@ -4,7 +4,12 @@
 		"jsxImportSource": "react",
 		"target": "ESNext",
 		"module": "ESNext",
+<<<<<<< HEAD
 		"moduleResolution": "bundler",
+=======
+		"moduleResolution": "node",
+		"jsx": "react-jsx",
+>>>>>>> 24f7d5c4fc6737fde98a6a64eabdd6b8a030847d
 		"strict": true,
 		"skipLibCheck": true,
 		"esModuleInterop": true,
@@ -14,4 +19,9 @@
 	},
 	"include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
 	"exclude": ["node_modules"]
+<<<<<<< HEAD
 }
+=======
+}
+
+>>>>>>> 24f7d5c4fc6737fde98a6a64eabdd6b8a030847d
