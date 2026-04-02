@@ -23,7 +23,7 @@ const MoviesPage = () => {
 					`https://api.themoviedb.org/3/movie/popular?language=ko-KR&page=${currentPage}`,
 					{
 						headers: {
-							Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmYTU2MDc3MThmZWQwZjFlYTI3NmZiNTc3NDVmZmRiNSIsIm5iZiI6MTc3NDc3NTI3OS4wNzgsInN1YiI6IjY5YzhlYmVmNTUwMjViZWFkYTAxZTVhNCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.xUD0btJOl74kkYj-VJsIXeLFI8rnV-6yQTqluhxk4Uo`,
+							Authorization: `Bearer ${import.meta.env.VITE_API_TOKEN}`,
 						},
 					},
 				);
