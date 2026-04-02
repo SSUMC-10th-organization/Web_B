@@ -53,7 +53,7 @@ const MoviesNowPage = () => {
 			<div className="max-w-[1000px] mx-auto">
 				{/* 영화 그리드 판 */}
 				<div className="grid grid-cols-6 gap-4">
-					{movies.map((movie:Movie) => (
+					{movies.map((movie: Movie) => (
 						<Link
 							key={movie.id}
 							to={`/now/${movie.id}`}
