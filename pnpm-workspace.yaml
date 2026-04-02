@@ -1,0 +1,2 @@
+packages:
+  - 'Week*/**'  # Week1, Week2 등 Week로 시작하는 모든 하위 폴더 자동 포함
