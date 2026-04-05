@@ -1,6 +1,4 @@
 import "./App.css";
-
-// 1. React Router에서 필요한 함수/컴포넌트를 import
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import RootLayout from "./layout/root-layout";
 import HomePage from "./pages/Homepage";
@@ -24,9 +22,9 @@ const router = createBrowserRouter([
 				index: true,
 				element: <HomePage />,
 			},
-			{ path: "movies", element: <MoviesPage pagecg="popular"/> },
+			{ path: "movies", element: <MoviesPage pagecg="popular" /> },
 			{ path: "movies/:movieId", element: <MovieDetailPage /> },
-			{ path: "now", element: <MoviesPage pagecg="now_playing"/> },
+			{ path: "now", element: <MoviesPage pagecg="now_playing" /> },
 			{ path: "now/:movieId", element: <MovieDetailPage /> },
 		],
 	},

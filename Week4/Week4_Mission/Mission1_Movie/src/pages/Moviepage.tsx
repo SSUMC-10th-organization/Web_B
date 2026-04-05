@@ -1,16 +1,17 @@
 import { Link, useSearchParams } from "react-router-dom";
 import Loading from "../components/Loading";
-import type { Movie, MovieResponse } from "../types/movies";
 import { useCustomFetch } from "../hooks/useCustomFetch";
+import type { Movie, MovieResponse } from "../types/movies";
 
-const MoviesPage = ({pagecg} : {pagecg:string}) => {
+const MoviesPage = ({ pagecg }: { pagecg: string }) => {
 	// 주소창의 쿼리(?page=N)를 관리하는 훅
 	const [searchParams, setSearchParams] = useSearchParams();
 	// 현재 페이지 번호 추출 (숫자로 변환, 기본값 1)
 	const currentPage = Number(searchParams.get("page")) || 1;
 
-	const {movies, isloading, iserror} = useCustomFetch(`https://api.themoviedb.org/3/movie/${pagecg}?language=ko-KR&page=${currentPage}`);
-	
+	const { movies, isloading, iserror } = useCustomFetch(
+		`https://api.themoviedb.org/3/movie/${pagecg}?language=ko-KR&page=${currentPage}`,
+	);
 
 	// 6. 페이지 변경 핸들러 (MoviesNowPage와 동일 로직)
 	const handlePageChange = (step: number) => {
@@ -20,6 +21,7 @@ const MoviesPage = ({pagecg} : {pagecg:string}) => {
 	};
 
 	if (isloading) return <Loading />;
+	if (iserror) return <h1>에러가 발생했습니다. 다시 시도해주세요.</h1>;
 
 	return (
 		<div className="bg-white min-h-screen p-8">

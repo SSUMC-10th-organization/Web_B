@@ -1,3 +1,3 @@
 export const NotFound = () => {
-    return <h1>Wrong Access</h1>
-}
+	return <h1>Wrong Access</h1>;
+};
