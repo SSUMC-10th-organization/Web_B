@@ -20,7 +20,7 @@ export default function MoviesPage() {
 					`https://api.themoviedb.org/3/movie/popular?language=ko-KR&page=${page}`,
 					{
 						headers: {
-							Authorization: `Bearer ${import.meta.env.VITE_TMDB_KEY}`, // 본인 TMDB 토큰으로 교체
+							Authorization: `Bearer ${import.meta.env.VITE_TMDB_KEY}`,
 						},
 					},
 				);

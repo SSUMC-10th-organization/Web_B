@@ -2,7 +2,6 @@ import "./App.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 //import Movies from './pages/movies';
 import RootLayout from "./layout/root-layout";
-// 1) 만든 페이지 import
 import HomePage from "./pages/home";
 import MovieDetailPage from "./pages/MovieDetailPage";
 import MoviesPage from "./pages/MoviesPage";
@@ -11,7 +10,6 @@ import PlayingPage from "./pages/PlayingPage";
 import RatePage from "./pages/RatePage";
 import UpcomingPage from "./pages/UpcomingPage";
 
-// 2) 라우터에 연결
 const router = createBrowserRouter([
 	{
 		path: "/",
