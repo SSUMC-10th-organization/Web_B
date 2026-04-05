@@ -16,7 +16,7 @@ const router = createBrowserRouter([
 				element: <HomePage />,
 			},
 			{ path: "login", element: <LoginPage /> },
-      { path: "signup", element: <Signup /> }
+      		{ path: "signup", element: <Signup /> },
 		],
 	},
 	{ path: "*", element: <NotFound /> }, // 가장 마지막에 배치
