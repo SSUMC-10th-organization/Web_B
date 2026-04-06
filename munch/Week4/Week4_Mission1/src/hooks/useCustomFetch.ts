@@ -6,8 +6,6 @@ export function useCustomFetch<T>(url: string, params?: object) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const paramsKey = JSON.stringify(params);
-
   useEffect(() => {
     if (!url) return;
 
@@ -25,7 +23,7 @@ export function useCustomFetch<T>(url: string, params?: object) {
     };
 
     fetchData();
-  }, [url, paramsKey, params]);
+  }, [url]);
 
   return { data, isLoading, error };
 }
