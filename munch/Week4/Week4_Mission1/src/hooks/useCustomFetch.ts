@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { tmdb } from "../api/tmdb";
 
 export function useCustomFetch<T>(url: string, params?: object) {
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const paramsKey = useMemo(() => JSON.stringify(params), [params]);
 
   useEffect(() => {
     if (!url) return;
@@ -23,7 +25,7 @@ export function useCustomFetch<T>(url: string, params?: object) {
     };
 
     fetchData();
-  }, [url]);
+  }, [url, paramsKey]);
 
   return { data, isLoading, error };
 }
