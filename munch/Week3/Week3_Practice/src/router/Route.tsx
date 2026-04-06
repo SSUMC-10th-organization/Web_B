@@ -1,8 +1,8 @@
 type Props = {
-  path: string;
-  component: React.FC;
+	path: string;
+	component: React.FC;
 };
 
 export const Route = ({ component: Component }: Props) => {
-  return <Component />;
+	return <Component />;
 };

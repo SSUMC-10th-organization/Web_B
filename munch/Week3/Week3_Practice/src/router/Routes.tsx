@@ -1,33 +1,33 @@
 import {
-  Children,
-  cloneElement,
-  isValidElement,
-  useMemo,
-  type ReactElement,
+	Children,
+	cloneElement,
+	isValidElement,
+	type ReactElement,
+	useMemo,
 } from "react";
 import { useCurrentPath } from "./hooks";
 
 type RouteElement = ReactElement<{
-  path: string;
-  component: React.FC;
+	path: string;
+	component: React.FC;
 }>;
 
 type Props = {
-  children: ReactElement[];
+	children: ReactElement[];
 };
 
 export const Routes = ({ children }: Props) => {
-  const currentPath = useCurrentPath();
+	const currentPath = useCurrentPath();
 
-  const activeRoute = useMemo(() => {
-    const routes = Children.toArray(children).filter((child) =>
-      isValidElement(child),
-    ) as RouteElement[];
+	const activeRoute = useMemo(() => {
+		const routes = Children.toArray(children).filter((child) =>
+			isValidElement(child),
+		) as RouteElement[];
 
-    return routes.find((route) => route.props.path === currentPath);
-  }, [children, currentPath]);
+		return routes.find((route) => route.props.path === currentPath);
+	}, [children, currentPath]);
 
-  if (!activeRoute) return <div>404</div>;
+	if (!activeRoute) return <div>404</div>;
 
-  return cloneElement(activeRoute);
+	return cloneElement(activeRoute);
 };
