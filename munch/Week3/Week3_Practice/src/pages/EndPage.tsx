@@ -1,5 +1,5 @@
 const EndPage = () => {
-  return <h1>End Page</h1>;
+	return <h1>End Page</h1>;
 };
 
 export default EndPage;
