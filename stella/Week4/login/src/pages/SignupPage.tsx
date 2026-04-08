@@ -28,7 +28,7 @@ export const SignupPage = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isValid },
   } = useForm<FormFields>({
     defaultValues: {
       name: "",
@@ -92,10 +92,10 @@ export const SignupPage = () => {
       )}
 
       <button
-        disabled={isSubmitting}
+        disabled={!isValid || isSubmitting}
         type="button"
         onClick={handleSubmit(onSubmit)}
-        className="w-[300px] p-[10px] bg-blue-600 text-white py-3 rounded-md text-lg font-medium hover:bg-blue-700 transition-colors cursor-pointer disabled:bg-gray-300"
+        className="w-[300px] p-[10px] bg-black text-white py-3 rounded-md text-lg font-medium hover:bg-gray-700 transition-colors cursor-pointer disabled:bg-gray-300"
       >
         회원가입
       </button>

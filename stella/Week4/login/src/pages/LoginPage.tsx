@@ -1,9 +1,12 @@
 import { postSignin } from "../apis/auth";
+import { LOCAL_STORAGE_KEY } from "../constants/key";
 import useForm from "../hooks/useForm";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 import type { ResponseSigninDto } from "../types/auth";
 import { validateSignin, type UserSigninformation } from "../utils/validate";
 
 export const LoginPage = () => {
+  const { setItem } = useLocalStorage(LOCAL_STORAGE_KEY.accessToken);
   const { values, errors, touched, getInputProps } =
     useForm<UserSigninformation>({
       initialValue: {
@@ -15,7 +18,12 @@ export const LoginPage = () => {
 
   const handleSubmit = async () => {
     console.log(values);
-    const response: ResponseSigninDto = await postSignin(values);
+    try {
+      const response: ResponseSigninDto = await postSignin(values);
+      setItem(response.data.accessToken);
+    } catch (error) {
+      alert(error?.message);
+    }
   };
 
   const isDisabled =
@@ -47,7 +55,7 @@ export const LoginPage = () => {
         type="button"
         onClick={handleSubmit}
         disabled={isDisabled}
-        className="w-[300px] p-[10px] bg-blue-600 text-white py-3 rounded-md text-lg font-medium hover:bg-blue-700 transition-colors cursor-pointer disabled:bg-gray-300"
+        className="w-[300px] p-[10px] bg-black text-white py-3 rounded-md text-lg font-medium hover:bg-black transition-colors cursor-pointer disabled:bg-gray-300"
       >
         로그인
       </button>
