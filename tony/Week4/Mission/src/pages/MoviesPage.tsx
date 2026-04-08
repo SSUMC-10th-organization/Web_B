@@ -1,7 +1,8 @@
-import { useNavigate, useParams } from "react-router-dom";
-import type { MovieResponse } from "../types/movie";
-import useFetch from "../hooks/useFetch";
 import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import useFetch from "../hooks/useFetch";
+import type { MovieResponse } from "../types/movie";
+
 // 스타일 변수
 const styles = {
 	spinner: {
@@ -59,15 +60,12 @@ const nextBtnStyle = {
 	color: "white",
 };
 
-
-
 const MoviesPage = () => {
-	
 	const navigate = useNavigate();
 	const [page, setPage] = useState(1); //현재 페이지
 	const { category } = useParams<{ category: string }>(); //category 파라메터를 꺼내온다.
 	const { data, isPending, isError } = useFetch<MovieResponse>(
-    	`https://api.themoviedb.org/3/movie/${category}?language=ko-KR&page=${page}`
+		`https://api.themoviedb.org/3/movie/${category}?language=ko-KR&page=${page}`,
 	);
 
 	if (isPending)
@@ -111,19 +109,24 @@ const MoviesPage = () => {
 
 			{/* 영화 목록 */}
 			<ul className="grid grid-cols-5 gap-4 p-4">
-				{data?.results.map((movie) => ( //useState로 movies를 가져옴 map은 이걸 하나하나 객체를 반환함.(movie로 반환함)(커스텀훅완료)
-					<div
-						key={movie.id} //고유 아이디 부여 (내부 성능 최적화에 쓰임)
-						onClick={() => navigate(`/movie/${movie.id}`)}
-						style={{ cursor: "pointer" }}
-					>
-						<img
-							src={`https://image.tmdb.org/t/p/w300${movie.poster_path}`}
-							alt={movie.title}
-							className="w-full rounded-lg"
-						/>
-					</div>
-				))}
+				{data?.results.map(
+					(
+						movie, //useState로 movies를 가져옴 map은 이걸 하나하나 객체를 반환함.(movie로 반환함)(커스텀훅완료)
+					) => (
+						<button
+							key={movie.id}
+							type="button"
+							onClick={() => navigate(`/movie/${movie.id}`)}
+							style={{ cursor: "pointer" }}
+						>
+							<img
+								src={`https://image.tmdb.org/t/p/w300${movie.poster_path}`}
+								alt={movie.title}
+								className="w-full rounded-lg"
+							/>
+						</button>
+					),
+				)}
 			</ul>
 		</div>
 	);
