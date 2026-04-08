@@ -12,5 +12,9 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.4.7",
 		"typescript": "^5.9.3"
+	},
+	"dependencies": {
+		"@prisma/client": "^7.7.0",
+		"prisma": "^7.7.0"
 	}
 }
