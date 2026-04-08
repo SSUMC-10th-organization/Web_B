@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import googleIcon from "../assets/googleIcon.png";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { signinSchema, type UserSigninInformation } from "../utils/validate";
 
@@ -41,6 +42,21 @@ const LoginPage = () => {
 						로그인
 					</span>
 					<div className="w-7" />
+				</div>
+
+				<button
+					type="button"
+					onClick={() => {}}
+					className="w-full flex items-center justify-center gap-3 border border-gray-600 rounded py-2.5 text-white text-sm font-medium hover:border-gray-400 transition-colors"
+				>
+					<img src={googleIcon} alt="Google" className="w-5 h-5" />
+					구글 로그인
+				</button>
+
+				<div className="flex items-center gap-3">
+					<div className="flex-1 h-px bg-gray-600" />
+					<span className="text-gray-400 text-sm">OR</span>
+					<div className="flex-1 h-px bg-gray-600" />
 				</div>
 
 				<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
