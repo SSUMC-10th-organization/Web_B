@@ -2,7 +2,7 @@
 
 ### #️⃣ 연관된 이슈
 
-Closes #이슈번호
+#issue_num
 
 <br/>
 
