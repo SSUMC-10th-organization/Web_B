@@ -73,6 +73,10 @@ export const LoginPage = () => {
 		}
 	};
 
+	const handleGoogleLogin = () => {
+	window.location.href = "http://localhost:8000/v1/auth/google/login";
+	};
+
 	return (
 		<div className="flex flex-col items-center justify-center mt-20 px-4 text-white">
 			<div className="w-full max-w-md flex flex-col gap-6">
@@ -90,8 +94,9 @@ export const LoginPage = () => {
 
 				<button
 					type="button"
+					onClick={handleGoogleLogin}
 					className="w-full py-3 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center shadow-sm"
-				>
+					>
 					구글 로그인
 				</button>
 
