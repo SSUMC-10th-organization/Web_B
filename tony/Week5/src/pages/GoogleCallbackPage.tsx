@@ -16,7 +16,7 @@ function GoogleCallbackPage() {
 		} else {
 			navigate("/login", { replace: true });
 		}
-	}, []);
+	}, [navigate, searchParams]);
 
 	return (
 		<div className="flex items-center justify-center h-screen bg-black text-white">

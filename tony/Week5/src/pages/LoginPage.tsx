@@ -85,10 +85,17 @@ function LoginPage() {
 
 				<button
 					type="button"
-					onClick={() => window.location.href = "http://localhost:8000/v1/auth/google/login"}
+					onClick={() =>
+						(window.location.href =
+							"http://localhost:8000/v1/auth/google/login")
+					}
 					className="flex items-center justify-center gap-3 border border-gray-600 rounded-md py-3 text-white hover:bg-gray-800 transition"
 				>
-					<img src="https://www.google.com/favicon.ico" alt="google" className="w-5 h-5" />
+					<img
+						src="https://www.google.com/favicon.ico"
+						alt="google"
+						className="w-5 h-5"
+					/>
 					구글 로그인
 				</button>
 
