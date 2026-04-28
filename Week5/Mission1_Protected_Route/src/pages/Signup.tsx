@@ -1,7 +1,9 @@
+import { AxiosError } from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { publicApi } from "../apis/axiosInstance";
 import {
 	signupSchema,
 	type SignupFormInput,
@@ -10,9 +12,12 @@ import {
 
 type SignupStep = 1 | 2 | 3;
 
+type ErrorResponse = {
+	message?: string;
+};
+
 export const Signup = () => {
 	const navigate = useNavigate();
-
 	const [step, setStep] = useState<SignupStep>(1);
 	const [showPw, setShowPw] = useState(false);
 	const [showPwr, setShowPwr] = useState(false);
@@ -50,9 +55,7 @@ export const Signup = () => {
 	};
 
 	const handleEmailNext = async () => {
-		const isEmailValid = await trigger("email", {
-			shouldFocus: true,
-		});
+		const isEmailValid = await trigger("email", { shouldFocus: true });
 
 		if (isEmailValid) {
 			setStep(2);
@@ -62,15 +65,12 @@ export const Signup = () => {
 	const handlePasswordNext = async () => {
 		const isPasswordStepValid = await trigger(
 			["password", "confirmPassword"],
-			{
-				shouldFocus: true,
-			},
+			{ shouldFocus: true },
 		);
 
-		if (!isPasswordStepValid) return;
-		if (password !== confirmPassword) return;
-
-		setStep(3);
+		if (isPasswordStepValid) {
+			setStep(3);
+		}
 	};
 
 	const handleSignup = async (data: SignupFormValues) => {
@@ -83,29 +83,16 @@ export const Signup = () => {
 		};
 
 		try {
-			const response = await fetch("http://localhost:8000/v1/auth/signup", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					accept: "application/json",
-				},
-				body: JSON.stringify(requestBody),
-			});
-
-			const result = await response.json().catch(() => null);
-
-			if (!response.ok) {
-				setError("root", {
-					message: result?.message ?? "회원가입에 실패했습니다.",
-				});
-				return;
-			}
+			await publicApi.post("/v1/auth/signup", requestBody);
 
 			alert("회원가입 성공!");
-			navigate("/");
-		} catch {
+			navigate("/login");
+		} catch (error) {
+			const axiosError = error as AxiosError<ErrorResponse>;
+
 			setError("root", {
-				message: "서버와 통신 중 문제가 발생했습니다.",
+				message:
+					axiosError.response?.data?.message ?? "회원가입에 실패했습니다.",
 			});
 		}
 	};
@@ -122,8 +109,7 @@ export const Signup = () => {
 		!errors.password &&
 		!errors.confirmPassword;
 
-	const canSubmit =
-		nickname.trim().length > 0 && !errors.nickname && !isSubmitting;
+	const canSubmit = nickname.trim().length > 0 && !errors.nickname && !isSubmitting;
 
 	return (
 		<div className="flex flex-col items-center justify-center mt-20 px-4 text-white">
