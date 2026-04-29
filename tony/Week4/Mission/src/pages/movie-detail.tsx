@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
-import type { MovieDetail } from "../types/movie";
 import useFetch from "../hooks/useFetch";
+import type { MovieDetail } from "../types/movie";
 
 const styles = {
 	page: {
@@ -98,21 +98,26 @@ const styles = {
 } as const;
 
 const MovieDetailPage = () => {
-    const { movieId } = useParams<{ movieId: string }>();
-    const { data: movie, isPending, isError } = useFetch<MovieDetail>(
-        `https://api.themoviedb.org/3/movie/${movieId}?language=ko-KR`
-    );
+	const { movieId } = useParams<{ movieId: string }>();
+	const {
+		data: movie,
+		isPending,
+		isError,
+	} = useFetch<MovieDetail>(
+		`https://api.themoviedb.org/3/movie/${movieId}?language=ko-KR`,
+	);
 
-    if (isPending) return (
-        <div style={styles.loadingWrapper}>
-            <div style={styles.spinner} />
-            <p style={styles.loadingText}>로딩 중...</p>
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-        </div>
-    );
+	if (isPending)
+		return (
+			<div style={styles.loadingWrapper}>
+				<div style={styles.spinner} />
+				<p style={styles.loadingText}>로딩 중...</p>
+				<style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+			</div>
+		);
 
-    if (isError || !movie)
-        return <p style={styles.errorText}>에러가 발생했습니다.</p>;
+	if (isError || !movie)
+		return <p style={styles.errorText}>에러가 발생했습니다.</p>;
 
 	return (
 		<div style={styles.page}>
@@ -135,12 +140,17 @@ const MovieDetailPage = () => {
 					</div>
 
 					<p style={styles.infoText}>
-						⭐ {movie.vote_average.toFixed(1)} ({movie.vote_count.toLocaleString()}명)
+						⭐ {movie.vote_average.toFixed(1)} (
+						{movie.vote_count.toLocaleString()}명)
 					</p>
 					<p style={styles.infoText}>🎬 {movie.runtime}분</p>
 					<p style={styles.infoText}>📅 {movie.release_date}</p>
-					<p style={styles.infoText}>💰 제작비: ${movie.budget.toLocaleString()}</p>
-					<p style={styles.infoText}>💵 수익: ${movie.revenue.toLocaleString()}</p>
+					<p style={styles.infoText}>
+						💰 제작비: ${movie.budget.toLocaleString()}
+					</p>
+					<p style={styles.infoText}>
+						💵 수익: ${movie.revenue.toLocaleString()}
+					</p>
 
 					<h2 style={styles.overviewTitle}>줄거리</h2>
 					<p style={styles.overviewText}>{movie.overview}</p>

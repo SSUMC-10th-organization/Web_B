@@ -121,8 +121,9 @@ const MoviesPage = () => {
 			{/* 영화 목록 */}
 			<ul className="grid grid-cols-5 gap-4 p-4">
 				{movies?.map((movie) => (
-					<div
+					<button
 						key={movie.id}
+						type="button"
 						onClick={() => navigate(`/movie/${movie.id}`)}
 						style={{ cursor: "pointer" }}
 					>
@@ -131,7 +132,7 @@ const MoviesPage = () => {
 							alt={movie.title}
 							className="w-full rounded-lg transition-all duration-300 group-hover:blur-sm"
 						/>
-					</div>
+					</button>
 				))}
 			</ul>
 		</div>

@@ -7,7 +7,8 @@ const RootLayout = () => {
 	return (
 		<>
 			<Navbar />
-			<Outlet /> //children 경로에 해당하는 페이지를 여기에 랜딩해줘! 라는 자리 표시자.
+			<Outlet />{" "}
+			{/* children 경로에 해당하는 페이지를 여기에 랜딩해줘! 라는 자리 표시자. */}
 		</>
 	);
 };
