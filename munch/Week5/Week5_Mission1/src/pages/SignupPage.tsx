@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { type SubmitHandler, useForm } from "react-hook-form";
 import z from "zod";
 import { postSignup } from "../apis/auth";
 
@@ -40,6 +40,7 @@ const SignupPage = () => {
   });
 
   const onSubmit: SubmitHandler<FormFields> = async (data) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordCheck, ...rest } = data;
 
     const response = await postSignup(rest);

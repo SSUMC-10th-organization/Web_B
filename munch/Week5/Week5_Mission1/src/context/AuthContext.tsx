@@ -1,13 +1,13 @@
 import {
   createContext,
+  type PropsWithChildren,
   useContext,
   useState,
-  type PropsWithChildren,
 } from "react";
-import type { RequestSigninDto } from "../types/auth";
-import { useLocalStorage } from "../hooks/useLocalStorage";
-import { LOCAL_STORAGE_KEY } from "../constants/key";
 import { postLogout, postSignin } from "../apis/auth";
+import { LOCAL_STORAGE_KEY } from "../constants/key";
+import { useLocalStorage } from "../hooks/useLocalStorage";
+import type { RequestSigninDto } from "../types/auth";
 
 interface AuthContextType {
   accessToken: string | null;
@@ -16,6 +16,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext<AuthContextType>({
   accessToken: null,
   refreshToken: null,
@@ -87,6 +88,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

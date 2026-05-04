@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { getMyInfo } from "../apis/auth";
-import type { ResponseMyInfoDto } from "../types/auth";
-import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { getMyInfo } from "../apis/auth";
+import { useAuth } from "../context/AuthContext";
+import type { ResponseMyInfoDto } from "../types/auth";
 
 const MyPage = () => {
   const navigate = useNavigate();
@@ -31,6 +31,7 @@ const MyPage = () => {
       <h1>{data.data?.email}</h1>
 
       <button
+        type="button"
         className="cursor-pointer bg-blue-300 rounded-sm p-5 hover:scale-90"
         onClick={handleLogout}
       >

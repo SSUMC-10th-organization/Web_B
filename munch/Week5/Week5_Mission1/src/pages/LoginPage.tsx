@@ -1,9 +1,9 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import useForm from "../hooks/useForm";
 import type { UserSigninInformation } from "../utils/validate";
 import { validateSignin } from "../utils/validate";
-import { useEffect } from "react";
 
 const LoginPage = () => {
   const { login, accessToken } = useAuth();
@@ -29,8 +29,7 @@ const LoginPage = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href =
-      import.meta.env.VITE_SERVER_API_URL + "/v1/auth/google/login";
+    window.location.href = `${import.meta.env.VITE_SERVER_API_URL}/v1/auth/google/login`;
   };
 
   const isDisabled =
@@ -75,7 +74,7 @@ const LoginPage = () => {
           className="w-full bg-blue-600 text-white py-3 rounded-md text-lg font-medium hover:bg-blue-700 transition-colors cursor-pointer disabled:bg-gray-300"
         >
           <div className="flex items-center justify-center gap-4">
-            <img src={"/images/googleLogo.svg"} alt="Google Logo Image" />
+            <img src={"/images/googleLogo.svg"} alt="Google Logo" />
             <span>구글 로그인</span>
           </div>
         </button>
