@@ -5,40 +5,40 @@ import { useAuth } from "../context/AuthContext";
 import type { ResponseMyInfoDto } from "../types/auth";
 
 const MyPage = () => {
-  const navigate = useNavigate();
-  const { logout } = useAuth();
-  const [data, setData] = useState<ResponseMyInfoDto>({} as ResponseMyInfoDto);
-  useEffect(() => {
-    const getData = async () => {
-      const response = await getMyInfo();
-      console.log(response);
+	const navigate = useNavigate();
+	const { logout } = useAuth();
+	const [data, setData] = useState<ResponseMyInfoDto>({} as ResponseMyInfoDto);
+	useEffect(() => {
+		const getData = async () => {
+			const response = await getMyInfo();
+			console.log(response);
 
-      setData(response);
-    };
+			setData(response);
+		};
 
-    getData();
-  }, []);
+		getData();
+	}, []);
 
-  const handleLogout = async () => {
-    await logout();
-    navigate("/login");
-  };
+	const handleLogout = async () => {
+		await logout();
+		navigate("/login");
+	};
 
-  return (
-    <div>
-      <h1>{data.data?.name}님 환영합니다.</h1>
-      <img src={(data.data?.avator as string) || ""} alt={"구글 로고"} />
-      <h1>{data.data?.email}</h1>
+	return (
+		<div>
+			<h1>{data.data?.name}님 환영합니다.</h1>
+			<img src={(data.data?.avator as string) || ""} alt={"구글 로고"} />
+			<h1>{data.data?.email}</h1>
 
-      <button
-        type="button"
-        className="cursor-pointer bg-blue-300 rounded-sm p-5 hover:scale-90"
-        onClick={handleLogout}
-      >
-        로그아웃
-      </button>
-    </div>
-  );
+			<button
+				type="button"
+				className="cursor-pointer bg-blue-300 rounded-sm p-5 hover:scale-90"
+				onClick={handleLogout}
+			>
+				로그아웃
+			</button>
+		</div>
+	);
 };
 
 export default MyPage;
