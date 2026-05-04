@@ -44,14 +44,8 @@ axiosInstance.interceptors.response.use(
       !originalRequest._retry
     ) {
       if (originalRequest.url === "/v1/auth/refresh") {
-        const { removeItem: removeAccessToken } = useLocalStorage(
-          LOCAL_STORAGE_KEY.accessToken,
-        );
-        const { removeItem: removeRefreshToken } = useLocalStorage(
-          LOCAL_STORAGE_KEY.refreshToken,
-        );
-        removeAccessToken();
-        removeRefreshToken();
+        window.localStorage.removeItem(LOCAL_STORAGE_KEY.accessToken);
+        window.localStorage.removeItem(LOCAL_STORAGE_KEY.refreshToken);
         window.location.href = "/login";
         return Promise.reject(error);
       }
@@ -97,7 +91,7 @@ axiosInstance.interceptors.response.use(
       }
 
       return refreshPromise.then((newAccessToken) => {
-        originalRequest.headers["Authorization"] = `Bearer${newAccessToken}`;
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return axiosInstance.request(originalRequest);
       });
     }
