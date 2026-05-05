@@ -3,19 +3,19 @@ import type { ResponseLpDetailDto, ResponseLpListDto } from "../types/lp";
 import { axiosInstance } from "./axios";
 
 export const getLpList = async (
-  paginationDto: PaginationDto,
+	paginationDto: PaginationDto,
 ): Promise<ResponseLpListDto> => {
-  const { data } = await axiosInstance.get("/v1/lps", {
-    params: paginationDto,
-  });
+	const { data } = await axiosInstance.get("/v1/lps", {
+		params: paginationDto,
+	});
 
-  return data;
+	return data;
 };
 
 export const getLpDetail = async (
-  lpId: number,
+	lpId: number,
 ): Promise<ResponseLpDetailDto> => {
-  const { data } = await axiosInstance.get(`/v1/lps/${lpId}`);
+	const { data } = await axiosInstance.get(`/v1/lps/${lpId}`);
 
-  return data;
+	return data;
 };
