@@ -10,6 +10,9 @@ import { formatTimeAgo } from "../utils/date";
 import { getMyInfo } from "../apis/auth";
 import { createComment } from "../apis/comment";
 import type { PAGINATION_ORDER } from "../enums/common";
+import type { ResponseMyInfoDto } from "../types/auth";
+import type { Comment, ResponseCommentListDto } from "../types/comment";
+import type { Tag } from "../types/lp";
 
 const LpDetailPage = () => {
   const { lpid } = useParams<{ lpid: string }>();
@@ -22,7 +25,7 @@ const LpDetailPage = () => {
   const { data: myInfo } = useQuery({
     queryKey: ["myInfo"],
     queryFn: getMyInfo,
-    select: (data) => data.data,
+    select: (res: ResponseMyInfoDto) => res.data,
   });
 
   const {
@@ -51,7 +54,10 @@ const LpDetailPage = () => {
   });
 
   const isAuthor = myInfo?.id === data?.author?.id;
-  const comments = commentData?.pages.flatMap((page) => page.data.data) ?? [];
+  const comments =
+    commentData?.pages.flatMap(
+      (page: ResponseCommentListDto) => page.data.data,
+    ) ?? [];
 
   if (isPending) return <LoadingSpinner />;
   if (isError) return <ErrorFallback onRetry={refetch} />;
@@ -115,7 +121,7 @@ const LpDetailPage = () => {
         </p>
 
         <div className="flex flex-wrap gap-2 justify-center mb-8">
-          {data.tags?.map((tag) => (
+          {data.tags?.map((tag: Tag) => (
             <span
               key={tag.id}
               className="px-3 py-1 bg-gray-800 text-gray-300 rounded-full text-xs border border-gray-700"
@@ -200,7 +206,7 @@ const LpDetailPage = () => {
 
           {!isCommentPending &&
             !isCommentError &&
-            comments.map((comment) => (
+            comments.map((comment: Comment) => (
               <div
                 key={comment.id}
                 className="flex gap-4 py-4 border-b border-gray-800 last:border-0"

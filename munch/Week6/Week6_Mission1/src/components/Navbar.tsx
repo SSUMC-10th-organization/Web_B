@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../context/AuthContext";
 import { getMyInfo } from "../apis/auth";
+import type { ResponseMyInfoDto } from "../types/auth";
 
 type NavbarProps = {
   toggleSidebar?: () => void;
@@ -14,7 +15,7 @@ const Navbar = ({ toggleSidebar }: NavbarProps) => {
     queryKey: ["myInfo"],
     queryFn: getMyInfo,
     enabled: !!accessToken,
-    select: (data) => data.data,
+    select: (data: ResponseMyInfoDto) => data.data,
     staleTime: 1000 * 60 * 5,
   });
 

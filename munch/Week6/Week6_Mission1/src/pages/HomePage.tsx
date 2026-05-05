@@ -7,6 +7,7 @@ import type { PAGINATION_ORDER } from "../enums/common";
 import { ErrorFallback } from "../components/CommonStates";
 import { LpCardSkeleton } from "../components/Skeletons";
 import { formatTimeAgo } from "../utils/date";
+import type { Lp } from "../types/lp";
 
 const HomePage = () => {
   const { accessToken } = useAuth();
@@ -24,7 +25,7 @@ const HomePage = () => {
 
   const loadMoreRef = useIntersectionObserver(fetchNextPage, hasNextPage);
 
-  const lps = data?.pages.flatMap((page) => page.data.data) ?? [];
+  const lps: Lp[] = data?.pages.flatMap((page) => page.data.data) ?? [];
 
   if (!accessToken) {
     return (
@@ -70,7 +71,7 @@ const HomePage = () => {
           ))}
 
         {!isPending &&
-          lps.map((lp) => (
+          lps.map((lp: Lp) => (
             <Link
               key={lp.id}
               to={`/lp/${lp.id}`}
