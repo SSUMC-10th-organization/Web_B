@@ -1,8 +1,11 @@
 {
 	"compilerOptions": {
+		"jsx": "react-jsx",         
+    "moduleResolution": "bundler", 
+    "allowImportingTsExtensions": true, 
 		"target": "ESNext",
 		"module": "ESNext",
-		"moduleResolution": "node",
+		//"moduleResolution": "node",
 		"strict": true,
 		"skipLibCheck": true,
 		"esModuleInterop": true,
