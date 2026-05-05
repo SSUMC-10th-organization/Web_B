@@ -1,0 +1,60 @@
+import {
+  createBrowserRouter,
+  type RouteObject,
+  RouterProvider,
+} from "react-router-dom";
+import "./App.css";
+import { AuthProvider } from "./context/AuthContext";
+import HomeLayout from "./layout/HomeLayout";
+import ProtectedLayout from "./layout/ProtectedLayout";
+import GoogleLoginRedirectPage from "./pages/GoogleLoginRedirectPage";
+import HomePage from "./pages/HomePage";
+import LoginPage from "./pages/LoginPage";
+import MyPage from "./pages/MyPage";
+import NotFoundPage from "./pages/NotFoundPage";
+import SignupPage from "./pages/SignupPage";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import LpDetailPage from "./pages/LpDetailPage";
+import { queryClient } from "./lib/queryClient";
+
+const publicRoutes: RouteObject[] = [
+  {
+    path: "/",
+    element: <HomeLayout />,
+    errorElement: <NotFoundPage />,
+    children: [
+      { index: true, element: <HomePage /> },
+      { path: "login", element: <LoginPage /> },
+      { path: "signup", element: <SignupPage /> },
+      { path: "v1/auth/google/callback", element: <GoogleLoginRedirectPage /> },
+    ],
+  },
+];
+
+const protectedRoutes: RouteObject[] = [
+  {
+    path: "/",
+    element: <ProtectedLayout />,
+    errorElement: <NotFoundPage />,
+    children: [
+      { path: "mypage", element: <MyPage /> },
+      { path: "lp/:lpid", element: <LpDetailPage /> },
+    ],
+  },
+];
+
+const router = createBrowserRouter([...publicRoutes, ...protectedRoutes]);
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+    </QueryClientProvider>
+  );
+}
+
+export default App;
