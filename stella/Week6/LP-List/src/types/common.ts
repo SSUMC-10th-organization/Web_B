@@ -1,5 +1,3 @@
-import { PAGINATION_ORDER } from "../enums/common";
-
 export type CommonResponse<T> = {
   status: boolean;
   statusCode: number;
@@ -15,6 +13,8 @@ export type CursorBasedResponse<T> = {
   nextCursor: number;
   hasNext: boolean;
 };
+
+export type PAGINATION_ORDER = "asc" | "desc";
 
 export type PaginationDto = {
   cursor?: number;
