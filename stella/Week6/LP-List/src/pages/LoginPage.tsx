@@ -24,7 +24,6 @@ export const LoginPage = () => {
 
   const handleSubmit = async () => {
     await login(values);
-    navigate("/");
   };
 
   const handleGoogleLogin = () => {
