@@ -9,13 +9,19 @@ import { useLpMutation } from "../hooks/mutations/useLpMutations";
 import { useQueryClient } from "@tanstack/react-query";
 import { api } from "../apis/axiosInstance";
 
+type CommentPageResponse = {
+  data: {
+    data: any[]; // 댓글 배열 (시간 나면 여기도 Comment 타입으로 정의하면 좋음)
+  };
+};
+
 export const LpDetailPage = () => {
     const { lpid } = useParams();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     
     // 통합 Mutation에서 기능 꺼내오기
-    const { deleteLp, createComment, updateComment, deleteComment } = useLpMutation(lpid);
+    const { deleteLp, createComment, updateComment, deleteComment, toggleLike } = useLpMutation(lpid);
     const [currentUserId, setCurrentUserId] = useState<number | null>(null);
     useEffect(() => {
         const getMyInfo = async () => {
@@ -37,6 +43,7 @@ export const LpDetailPage = () => {
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editContent, setEditContent] = useState("");
     const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+    
 
     // 데이터 패칭
     const { data: lpData, isPending: lpPending, isError: lpError, refetch: lpRefetch } = useGetLpDetail(lpid!);
@@ -51,7 +58,8 @@ export const LpDetailPage = () => {
     }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     const lp = lpData?.data;
-    const allComments = commentData?.pages.flatMap((page) => page.data.data) || [];
+    const allComments = commentData?.pages.flatMap((page : CommentPageResponse) => page.data.data) || [];
+    const isLiked = lp?.likes?.some((like: any) => Number(like.userId) === Number(currentUserId));
 
     // --- 핸들러 로직 ---
 
@@ -116,9 +124,24 @@ export const LpDetailPage = () => {
                                 <h1 className="text-3xl font-bold mb-2">{lp?.title}</h1>
                                 <p className="text-zinc-500 text-sm">업로드일: {lp?.createdAt?.split('T')[0]}</p>
                             </div>
-                            <button type="button" className="flex items-center gap-2 bg-zinc-900 px-4 py-2 rounded-full border border-zinc-800 hover:border-red-500 transition-all">
-                                <span>❤️</span>
-                                <span className="font-medium">{lp?.likes?.length || 0}</span>
+                            <button 
+                                type="button"
+                                disabled={toggleLike.isPending} 
+                                onClick={() => {
+                                    if (currentUserId) {
+                                        toggleLike.mutate({currentUserId, isCurrentlyLiked: isLiked});
+                                    } else {
+                                        console.error("로그인이 필요합니다.");
+                                    }
+                                }}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200 ${
+                                    isLiked 
+                                        ? "bg-red-900/20 border-red-500 text-red-400" 
+                                        : "bg-zinc-900 border-zinc-800 hover:border-red-500 text-zinc-400"
+                                }`}
+                            >
+                                <span className="text-lg">{isLiked ? "❤️" : "🤍"}</span>
+                                <span className="font-bold">{lp?.likes?.length || 0}</span>
                             </button>
                         </div>
                         <hr className="border-zinc-800 my-6" />

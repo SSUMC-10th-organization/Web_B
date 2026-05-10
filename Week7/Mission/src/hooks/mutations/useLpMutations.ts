@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as lpApi from "../../apis/lp";
 import { QUERY_KEY } from "../../constants/key";
+import { api } from "../../apis/axiosInstance";
 
 export const useLpMutation = (lpid?: string) => {
   const queryClient = useQueryClient();
@@ -59,11 +60,70 @@ export const useLpMutation = (lpid?: string) => {
     },
   });
 
+  const toggleLike = useMutation({
+    // ✅ 1. 현재 좋아요 상태에 따라 POST 또는 DELETE 호출
+    mutationFn: async ({ currentUserId, isCurrentlyLiked }: { currentUserId: number, isCurrentlyLiked: boolean }) => {
+      if (!lpid) throw new Error("LP ID가 없습니다.");
+      
+      if (isCurrentlyLiked) {
+        // 이미 눌린 상태면 좋아요 취소
+        const response = await api.delete(`/v1/lps/${lpid}/likes`);
+        return response.data;
+      } else {
+        // 안 눌린 상태면 좋아요 추가
+        const response = await api.post(`/v1/lps/${lpid}/likes`);
+        return response.data;
+      }
+    },
+
+    // ✅ 2. 낙관적 업데이트 로직 (키 값: [QUERY_KEY.lps, lpid])
+    onMutate: async ({ currentUserId, isCurrentlyLiked }) => {
+      // 쿼리 취소 및 이전 데이터 스냅샷
+      await queryClient.cancelQueries({ queryKey: [QUERY_KEY.lps, lpid] });
+      const previousLp = queryClient.getQueryData([QUERY_KEY.lps, lpid]);
+
+      // 캐시 데이터 즉시 수정
+      queryClient.setQueryData([QUERY_KEY.lps, lpid], (old: any) => {
+        if (!old || !old.data) return old;
+
+        const currentLikes = old.data.likes || [];
+
+        const newLikes = isCurrentlyLiked
+          ? currentLikes.filter((like: any) => Number(like.userId) !== Number(currentUserId)) // 취소: 내 ID 제거
+          : [...currentLikes, { id: Date.now(), userId: currentUserId, lpId: Number(lpid) }]; // 추가: 가짜 객체 삽입
+
+        return {
+          ...old,
+          data: {
+            ...old.data,
+            likes: newLikes,
+          },
+        };
+      });
+
+      return { previousLp };
+    },
+
+    onError: (error, variables, context) => {
+      console.error("좋아요 에러:", error);
+      if (context?.previousLp) {
+        queryClient.setQueryData([QUERY_KEY.lps, lpid], context.previousLp);
+      }
+    },
+
+    onSettled: () => {
+      // 성공/실패 여부 상관없이 서버 데이터와 동기화
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY.lps, lpid] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY.lps] });
+    },
+  });
+
   return {
     createLp,
     deleteLp,
     createComment,
     updateComment,
     deleteComment,
+    toggleLike,
   };
 };

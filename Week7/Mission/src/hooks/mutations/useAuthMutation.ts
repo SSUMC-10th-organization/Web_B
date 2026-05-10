@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation,useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { publicApi,api } from "../../apis/axiosInstance";
 import { useAuth } from "../../context/AuthContext";
@@ -86,6 +86,7 @@ export const useWithdrawMutation = () => {
 
 export const useUpdateUserMutation = () => {
     const { setNick } = useAuth();
+    const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (data: UpdateUserPayload) => {
@@ -93,18 +94,55 @@ export const useUpdateUserMutation = () => {
       return response.data.data;
     },
 
-    onSuccess: (data) => {
-      // 서버에서 내려온 최신 이름으로 Context 상태 업데이트
-      if (data.name) {
-        setNick(data.name);
-      }
-    },
+    // 낙관적 업데이트: 서버 응답을 기다리지 않고 즉시 UI 변경
+        onMutate: async (newUserData) => {
+            // 1. 기존에 진행 중인 정보 갱신 요청이 있다면 취소
+            await queryClient.cancelQueries({ queryKey: ["me"] });
 
-    onError: (error: any) => {
-      console.error("수정 에러:", error);
-      const message = error.response?.data?.message || "정보 수정에 실패했습니다.";
-      alert(message);
-    },
+            // 2. 에러 발생 시 롤백하기 위해 '현재' 캐시 데이터를 백업
+            const previousUserData: any = queryClient.getQueryData(["me"]);
+
+            // 3. Nav-Bar 즉시 업데이트 (AuthContext 변경)
+            if (newUserData.name) {
+                setNick(newUserData.name);
+            }
+
+            // MyPage 즉시 업데이트 (React Query 캐시 변경)
+            queryClient.setQueryData(["me"], (old: any) => {
+                if (!old) return old;
+                return {
+                    ...old,
+                    data: {
+                        ...old.data,
+                        name: newUserData.name,
+                        bio: newUserData.bio !== undefined ? newUserData.bio : old.data.bio,
+                    },
+                };
+            });
+
+            // 5. 백업 데이터를 onError로 전달
+            return { previousUserData };
+        },
+
+        // 서버 요청 실패 시: 백업해둔 데이터로 롤백 (원상복구)
+        onError: (error: any, newUserData, context) => {
+            console.error("수정 에러:", error);
+
+            // MyPage 원상복구
+            if (context?.previousUserData) {
+                queryClient.setQueryData(["me"], context.previousUserData);
+                // Nav-Bar 원상복구 (이전 이름으로)
+                setNick(context.previousUserData.data.name);
+            }
+
+            const message = error.response?.data?.message || "정보 수정에 실패했습니다.";
+            alert(message);
+        },
+
+        // 🏁 성공하든 실패하든 마무리: 서버의 진짜 최신 데이터와 캐시 동기화
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["me"] });
+        },
   });
 
 };

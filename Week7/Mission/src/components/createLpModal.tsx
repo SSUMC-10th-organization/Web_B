@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLpMutation } from "../hooks/mutations/useLpMutations";
 import { QUERY_KEY } from "../constants/key";
 import { useQueryClient } from "@tanstack/react-query";
-import { api } from "../apis/axiosInstance"; // ✅ api 임포트 확인
+import { api } from "../apis/axiosInstance"; 
 
 interface CreateLpModalProps {
     isOpen: boolean;
