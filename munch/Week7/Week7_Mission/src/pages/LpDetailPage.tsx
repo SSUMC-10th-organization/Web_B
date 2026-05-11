@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getMyInfo } from "../apis/auth";
+import { getMyInfo, uploadImage } from "../apis/auth";
 import { createComment, deleteComment, updateComment } from "../apis/comment";
 import { deleteLp, likeLp, unlikeLp, updateLp } from "../apis/lp";
 import { ErrorFallback, LoadingSpinner } from "../components/CommonStates";
 import ConfirmModal from "../components/ConfirmModal";
 import { CommentSkeleton } from "../components/Skeletons";
+import { toast } from "../components/Toast";
 import type { PAGINATION_ORDER } from "../enums/common";
 import useGetComments from "../hooks/queries/useGetComments";
 import useGetLpDetail from "../hooks/queries/useGetLpDetail";
@@ -15,7 +16,6 @@ import type { ResponseMyInfoDto } from "../types/auth";
 import type { Comment, ResponseCommentListDto } from "../types/comment";
 import type { LpDetail, Tag } from "../types/lp";
 import { formatTimeAgo } from "../utils/date";
-import { toast } from "../components/toast";
 
 const initCommentSkeletonKeys = Array.from(
   { length: 3 },
@@ -34,7 +34,10 @@ const LpDetailPage = () => {
   const [isEditingLp, setIsEditingLp] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
+  const [editThumbnail, setEditThumbnail] = useState("");
+  const [editThumbnailPreview, setEditThumbnailPreview] = useState("");
   const [isDeleteLpModalOpen, setIsDeleteLpModalOpen] = useState(false);
+  const thumbnailInputRef = useRef<HTMLInputElement>(null);
 
   const [commentOrder, setCommentOrder] = useState<PAGINATION_ORDER>("desc");
   const [commentInput, setCommentInput] = useState("");
@@ -65,9 +68,36 @@ const LpDetailPage = () => {
     hasNextPage,
   );
 
+  const { mutate: uploadThumb } = useMutation({
+    mutationFn: (file: File) => uploadImage(file),
+    onSuccess: ({ data }) => {
+      setEditThumbnail(data.imageUrl);
+      setEditThumbnailPreview(data.imageUrl);
+    },
+    onError: () => {
+      toast.error("이미지 업로드에 실패했습니다.");
+    },
+  });
+
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setEditThumbnailPreview(ev.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+      uploadThumb(file);
+    }
+  };
+
   const { mutate: submitEditLp, isPending: isEditingLpPending } = useMutation({
     mutationFn: () =>
-      updateLp(Number(lpid), { title: editTitle, content: editContent }),
+      updateLp(Number(lpid), {
+        title: editTitle,
+        content: editContent,
+        thumbnail: editThumbnail || undefined,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["lp", Number(lpid)] });
       toast.success("LP가 수정되었습니다.");
@@ -243,6 +273,8 @@ const LpDetailPage = () => {
                     onClick={() => {
                       setEditTitle(data.title);
                       setEditContent(data.content);
+                      setEditThumbnail(data.thumbnail);
+                      setEditThumbnailPreview(data.thumbnail);
                       setIsEditingLp(true);
                     }}
                     className="hover:text-white transition-colors"
@@ -264,13 +296,31 @@ const LpDetailPage = () => {
           )}
         </div>
 
-        <div className="relative w-80 h-80 rounded-full overflow-hidden shadow-2xl mb-12 animate-[spin_12s_linear_infinite]">
-          <img
-            src={data.thumbnail}
-            alt={data.title}
-            className="w-full h-full object-cover"
+        <div className="relative w-80 h-80 mb-12">
+          <div className="w-full h-full rounded-full overflow-hidden shadow-2xl animate-[spin_12s_linear_infinite]">
+            <img
+              src={isEditingLp ? editThumbnailPreview : data.thumbnail}
+              alt={data.title}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 m-auto w-12 h-12 bg-[#1a1a1a] rounded-full border border-gray-600 pointer-events-none" />
+          </div>
+          {isEditingLp && (
+            <button
+              type="button"
+              onClick={() => thumbnailInputRef.current?.click()}
+              className="absolute bottom-4 right-4 bg-[#e91e8c] text-white text-xs px-3 py-1.5 rounded-full hover:bg-[#c2185b] transition-colors shadow-lg"
+            >
+              📷 변경
+            </button>
+          )}
+          <input
+            ref={thumbnailInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleThumbnailChange}
           />
-          <div className="absolute inset-0 m-auto w-12 h-12 bg-[#1a1a1a] rounded-full border border-gray-600 pointer-events-none" />
         </div>
 
         {isEditingLp ? (

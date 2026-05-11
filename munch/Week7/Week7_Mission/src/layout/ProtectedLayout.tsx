@@ -11,7 +11,7 @@ import { deleteUser } from "../apis/auth";
 import ConfirmModal from "../components/ConfirmModal";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
-import { toast } from "../components/toast";
+import { toast } from "../components/Toast";
 import { LOCAL_STORAGE_KEY } from "../constants/key";
 import { useAuth } from "../context/AuthContext";
 import { useLocalStorage } from "../hooks/useLocalStorage";

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { getMyInfo, updateUser, uploadImage } from "../apis/auth";
 import { ErrorFallback, LoadingSpinner } from "../components/CommonStates";
 import { LpCardSkeleton } from "../components/Skeletons";
-import { toast } from "../components/toast";
+import { toast } from "../components/Toast";
 import type { PAGINATION_ORDER } from "../enums/common";
 import useGetMyLikedLpList from "../hooks/queries/useGetMyLikedLpList";
 import { useIntersectionObserver } from "../hooks/useIntersectionObserver";

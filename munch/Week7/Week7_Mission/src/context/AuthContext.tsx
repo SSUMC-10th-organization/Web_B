@@ -10,7 +10,7 @@ import { postLogout, postSignin } from "../apis/auth";
 import { LOCAL_STORAGE_KEY } from "../constants/key";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import type { RequestSigninDto } from "../types/auth";
-import { toast } from "../components/toast";
+import { toast } from "../components/Toast";
 
 interface AuthContextType {
   accessToken: string | null;

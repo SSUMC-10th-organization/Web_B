@@ -1,7 +1,41 @@
 import { useEffect, useState } from "react";
-import { TOAST_EVENT, type ToastItem } from "./toast";
 
 type ToastType = "success" | "error" | "info";
+
+export type ToastItem = {
+  id: number;
+  message: string;
+  type: ToastType;
+};
+
+const TOAST_EVENT = "toast:add";
+
+let toastId = 0;
+
+// eslint-disable-next-line react-refresh/only-export-components
+export const toast = {
+  success: (message: string) => {
+    window.dispatchEvent(
+      new CustomEvent(TOAST_EVENT, {
+        detail: { id: ++toastId, message, type: "success" } satisfies ToastItem,
+      }),
+    );
+  },
+  error: (message: string) => {
+    window.dispatchEvent(
+      new CustomEvent(TOAST_EVENT, {
+        detail: { id: ++toastId, message, type: "error" } satisfies ToastItem,
+      }),
+    );
+  },
+  info: (message: string) => {
+    window.dispatchEvent(
+      new CustomEvent(TOAST_EVENT, {
+        detail: { id: ++toastId, message, type: "info" } satisfies ToastItem,
+      }),
+    );
+  },
+};
 
 const bgColor: Record<ToastType, string> = {
   success: "bg-green-600",

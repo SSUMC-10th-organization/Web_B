@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { postSignup } from "../apis/auth";
 import { useMutation } from "@tanstack/react-query";
-import { toast } from "../components/toast";
+import { toast } from "../components/Toast";
 import useForm from "../hooks/useForm";
 import type { UserSignupInformation } from "../utils/validate";
 import { validateSignup } from "../utils/validate";
