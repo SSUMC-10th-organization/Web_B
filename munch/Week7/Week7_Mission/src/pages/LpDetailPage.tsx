@@ -3,19 +3,19 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getMyInfo } from "../apis/auth";
 import { createComment, deleteComment, updateComment } from "../apis/comment";
-import { deleteLp, updateLp } from "../apis/lp";
+import { deleteLp, likeLp, unlikeLp, updateLp } from "../apis/lp";
 import { ErrorFallback, LoadingSpinner } from "../components/CommonStates";
 import ConfirmModal from "../components/ConfirmModal";
 import { CommentSkeleton } from "../components/Skeletons";
-import { toast } from "../components/Toast";
 import type { PAGINATION_ORDER } from "../enums/common";
 import useGetComments from "../hooks/queries/useGetComments";
 import useGetLpDetail from "../hooks/queries/useGetLpDetail";
 import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
 import type { ResponseMyInfoDto } from "../types/auth";
 import type { Comment, ResponseCommentListDto } from "../types/comment";
-import type { Tag } from "../types/lp";
+import type { LpDetail, Tag } from "../types/lp";
 import { formatTimeAgo } from "../utils/date";
+import { toast } from "../components/toast";
 
 const initCommentSkeletonKeys = Array.from(
   { length: 3 },
@@ -31,15 +31,11 @@ const LpDetailPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  // LP 수정 상태
   const [isEditingLp, setIsEditingLp] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
-
-  // LP 삭제 확인 모달
   const [isDeleteLpModalOpen, setIsDeleteLpModalOpen] = useState(false);
 
-  // 댓글 상태
   const [commentOrder, setCommentOrder] = useState<PAGINATION_ORDER>("desc");
   const [commentInput, setCommentInput] = useState("");
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
@@ -69,7 +65,6 @@ const LpDetailPage = () => {
     hasNextPage,
   );
 
-  // LP 수정
   const { mutate: submitEditLp, isPending: isEditingLpPending } = useMutation({
     mutationFn: () =>
       updateLp(Number(lpid), { title: editTitle, content: editContent }),
@@ -83,7 +78,6 @@ const LpDetailPage = () => {
     },
   });
 
-  // LP 삭제
   const { mutate: removeLp } = useMutation({
     mutationFn: () => deleteLp(Number(lpid)),
     onSuccess: () => {
@@ -96,30 +90,70 @@ const LpDetailPage = () => {
     },
   });
 
-  // 댓글 작성
+  const lpQueryKey = ["lp", Number(lpid)];
+
+  const isLiked =
+    data?.likes.some((like) => like.userId === myInfo?.id) ?? false;
+
+  const { mutate: toggleLike } = useMutation({
+    mutationFn: (currentIsLiked: boolean) =>
+      currentIsLiked ? unlikeLp(Number(lpid)) : likeLp(Number(lpid)),
+
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: lpQueryKey });
+
+      const previousData = queryClient.getQueryData(lpQueryKey);
+
+      const currentIsLiked = isLiked;
+
+      queryClient.setQueryData(lpQueryKey, (old: LpDetail) => {
+        if (!old) return old;
+        const likes = old.likes;
+        const updatedLikes = currentIsLiked
+          ? likes.filter((like) => like.userId !== myInfo?.id)
+          : [
+              ...likes,
+              { id: Date.now(), userId: myInfo?.id ?? 0, lpId: Number(lpid) },
+            ];
+
+        return {
+          ...old,
+          likes: updatedLikes,
+        };
+      });
+
+      return { previousData, currentIsLiked };
+    },
+
+    onError: (_err, _vars, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(lpQueryKey, context.previousData);
+      }
+    },
+
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: lpQueryKey });
+    },
+  });
+
   const { mutate: submitComment, isPending: isSubmitting } = useMutation({
     mutationFn: () => createComment(Number(lpid), { content: commentInput }),
     onSuccess: () => {
       setCommentInput("");
-      queryClient.invalidateQueries({
-        queryKey: ["lpComments", Number(lpid)],
-      });
+      queryClient.invalidateQueries({ queryKey: ["lpComments", Number(lpid)] });
     },
     onError: () => {
       toast.error("댓글 작성에 실패했습니다.");
     },
   });
 
-  // 댓글 수정
   const { mutate: submitEditComment } = useMutation({
     mutationFn: (commentId: number) =>
       updateComment(Number(lpid), commentId, { content: editingContent }),
     onSuccess: () => {
       setEditingCommentId(null);
       setEditingContent("");
-      queryClient.invalidateQueries({
-        queryKey: ["lpComments", Number(lpid)],
-      });
+      queryClient.invalidateQueries({ queryKey: ["lpComments", Number(lpid)] });
       toast.success("댓글이 수정되었습니다.");
     },
     onError: () => {
@@ -127,13 +161,10 @@ const LpDetailPage = () => {
     },
   });
 
-  // 댓글 삭제
   const { mutate: removeComment } = useMutation({
     mutationFn: (commentId: number) => deleteComment(Number(lpid), commentId),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["lpComments", Number(lpid)],
-      });
+      queryClient.invalidateQueries({ queryKey: ["lpComments", Number(lpid)] });
       toast.success("댓글이 삭제되었습니다.");
     },
     onError: () => {
@@ -141,9 +172,7 @@ const LpDetailPage = () => {
     },
   });
 
-  // 작성자 본인 여부
   const isAuthor = myInfo?.id === data?.author?.id;
-
   const comments: Comment[] =
     commentData?.pages.flatMap(
       (page: ResponseCommentListDto) => page.data.data,
@@ -160,9 +189,7 @@ const LpDetailPage = () => {
 
   return (
     <div className="max-w-4xl mx-auto py-10 px-4">
-      {/* LP 상세 */}
       <div className="flex flex-col items-center bg-[#1a1a1a] p-10 rounded-2xl shadow-xl mb-10">
-        {/* 작성자 & 시간 */}
         <div className="w-full flex justify-between items-center mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
@@ -177,7 +204,6 @@ const LpDetailPage = () => {
           </span>
         </div>
 
-        {/* 제목 & 수정/삭제 버튼 - 작성자만 */}
         <div className="w-full flex justify-between items-center mb-8">
           {isEditingLp ? (
             <input
@@ -238,7 +264,6 @@ const LpDetailPage = () => {
           )}
         </div>
 
-        {/* LP 원형 썸네일 */}
         <div className="relative w-80 h-80 rounded-full overflow-hidden shadow-2xl mb-12 animate-[spin_12s_linear_infinite]">
           <img
             src={data.thumbnail}
@@ -248,7 +273,6 @@ const LpDetailPage = () => {
           <div className="absolute inset-0 m-auto w-12 h-12 bg-[#1a1a1a] rounded-full border border-gray-600 pointer-events-none" />
         </div>
 
-        {/* 본문 - 수정 모드 */}
         {isEditingLp ? (
           <textarea
             value={editContent}
@@ -262,7 +286,6 @@ const LpDetailPage = () => {
           </p>
         )}
 
-        {/* 태그 */}
         <div className="flex flex-wrap gap-2 justify-center mb-8">
           {data.tags?.map((tag: Tag) => (
             <span
@@ -274,19 +297,20 @@ const LpDetailPage = () => {
           ))}
         </div>
 
-        {/* 좋아요 */}
         <button
           type="button"
-          className="flex items-center gap-2 text-[#e91e8c] hover:scale-110 transition-transform"
+          onClick={() => toggleLike(isLiked)}
+          className={`flex items-center gap-2 hover:scale-110 transition-transform ${
+            isLiked ? "text-[#e91e8c]" : "text-gray-500 hover:text-[#e91e8c]"
+          }`}
         >
-          <span className="text-2xl">♥</span>
+          <span className="text-2xl">{isLiked ? "♥" : "♡"}</span>
           <span className="font-semibold text-lg">
             {data.likes?.length || 0}
           </span>
         </button>
       </div>
 
-      {/* 댓글 영역 */}
       <div className="bg-[#1a1a1a] p-8 rounded-2xl shadow-xl">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg font-bold text-white">댓글</h2>
@@ -316,7 +340,6 @@ const LpDetailPage = () => {
           </div>
         </div>
 
-        {/* 댓글 작성 */}
         <div className="flex flex-col gap-2 mb-8">
           <div className="flex gap-3">
             <input
@@ -342,7 +365,6 @@ const LpDetailPage = () => {
           </span>
         </div>
 
-        {/* 댓글 목록 */}
         <div className="flex flex-col gap-4">
           {isCommentPending &&
             initCommentSkeletonKeys.map((key) => <CommentSkeleton key={key} />)}
@@ -359,7 +381,6 @@ const LpDetailPage = () => {
                 <div className="w-10 h-10 bg-[#e91e8c] rounded-full flex items-center justify-center text-white font-bold shrink-0">
                   {comment.author.name[0]}
                 </div>
-
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline gap-2 mb-1">
                     <span className="font-semibold text-gray-200 text-sm">
@@ -369,8 +390,6 @@ const LpDetailPage = () => {
                       {formatTimeAgo(comment.createdAt)}
                     </span>
                   </div>
-
-                  {/* 수정 모드 */}
                   {editingCommentId === comment.id ? (
                     <div className="flex gap-2 mt-1">
                       <input
@@ -401,7 +420,6 @@ const LpDetailPage = () => {
                   )}
                 </div>
 
-                {/* 본인 댓글만 메뉴 - authorId로 정확히 비교 */}
                 {myInfo?.id === comment.authorId && (
                   <div className="relative shrink-0">
                     <button
@@ -452,7 +470,6 @@ const LpDetailPage = () => {
         <div ref={loadMoreCommentsRef} className="h-4 w-full mt-2" />
       </div>
 
-      {/* LP 삭제 확인 모달 */}
       {isDeleteLpModalOpen && (
         <ConfirmModal
           message="정말 이 LP를 삭제하시겠습니까?"

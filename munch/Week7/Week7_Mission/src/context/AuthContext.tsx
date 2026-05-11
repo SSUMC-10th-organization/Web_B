@@ -7,10 +7,10 @@ import {
 } from "react";
 import { useNavigate } from "react-router-dom";
 import { postLogout, postSignin } from "../apis/auth";
-import { toast } from "../components/Toast";
 import { LOCAL_STORAGE_KEY } from "../constants/key";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import type { RequestSigninDto } from "../types/auth";
+import { toast } from "../components/toast";
 
 interface AuthContextType {
   accessToken: string | null;
@@ -51,7 +51,6 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     getRefreshTokenFromStorage(),
   );
 
-  // 로그인 useMutation
   const { mutate: login, isPending: isPendingLogin } = useMutation({
     mutationFn: (signinData: RequestSigninDto) => postSignin(signinData),
     onSuccess: ({ data }) => {
@@ -67,7 +66,6 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     },
   });
 
-  // 로그아웃 useMutation
   const { mutate: logout } = useMutation({
     mutationFn: postLogout,
     onSuccess: () => {

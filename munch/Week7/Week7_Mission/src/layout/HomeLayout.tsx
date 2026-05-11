@@ -6,7 +6,7 @@ import ConfirmModal from "../components/ConfirmModal";
 import Footer from "../components/Footer";
 import LpCreateModal from "../components/LpCreateModal";
 import Navbar from "../components/Navbar";
-import { toast } from "../components/Toast";
+import { toast } from "../components/toast";
 import { LOCAL_STORAGE_KEY } from "../constants/key";
 import { useAuth } from "../context/AuthContext";
 import { useLocalStorage } from "../hooks/useLocalStorage";
@@ -44,7 +44,6 @@ const HomeLayout = () => {
       <Navbar toggleSidebar={() => setIsSidebarOpen((prev) => !prev)} />
 
       <div className="flex flex-1 relative overflow-hidden">
-        {/* 딤드 오버레이 - 사이드바 열릴 때 항상 표시 */}
         {isSidebarOpen && (
           <div
             className="fixed inset-0 bg-black/60 z-40"
@@ -52,10 +51,6 @@ const HomeLayout = () => {
           />
         )}
 
-        {/* 사이드바
-					- 기본: 숨김 (-translate-x-full)
-					- 열릴 때: translate-x-0
-					- 모바일/데스크탑 모두 동일하게 토글로 동작 */}
         <aside
           className={`
 						fixed top-0 left-0 z-50
@@ -120,7 +115,6 @@ const HomeLayout = () => {
           )}
         </aside>
 
-        {/* 메인 콘텐츠 */}
         <main className="flex-1 overflow-y-auto p-6 relative min-w-0">
           <Outlet />
           {accessToken && (

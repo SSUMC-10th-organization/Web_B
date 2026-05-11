@@ -1,13 +1,7 @@
 import { useEffect, useState } from "react";
+import { TOAST_EVENT, type ToastItem } from "./toast";
 
 type ToastType = "success" | "error" | "info";
-
-type ToastProps = {
-  message: string;
-  type?: ToastType;
-  duration?: number;
-  onClose: () => void;
-};
 
 const bgColor: Record<ToastType, string> = {
   success: "bg-green-600",
@@ -15,69 +9,45 @@ const bgColor: Record<ToastType, string> = {
   info: "bg-gray-700",
 };
 
-export const Toast = ({
-  message,
-  type = "info",
-  duration = 2500,
-  onClose,
-}: ToastProps) => {
+type ToastItemProps = {
+  item: ToastItem;
+  onClose: (id: number) => void;
+};
+
+const ToastItemComponent = ({ item, onClose }: ToastItemProps) => {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setVisible(false);
-      setTimeout(onClose, 300);
-    }, duration);
+      setTimeout(() => onClose(item.id), 300);
+    }, 2500);
     return () => clearTimeout(timer);
-  }, [duration, onClose]);
+  }, [item.id, onClose]);
 
   return (
     <div
-      className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] px-5 py-3 rounded-xl text-white text-sm shadow-lg transition-all duration-300 ${bgColor[type]} ${
+      className={`px-5 py-3 rounded-xl text-white text-sm shadow-lg transition-all duration-300 ${bgColor[item.type]} ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       }`}
     >
-      {message}
+      {item.message}
     </div>
   );
 };
 
-// 전역 토스트 관리 훅
-type ToastItem = {
-  id: number;
-  message: string;
-  type: ToastType;
-};
-
-let toastId = 0;
-let setToastsExternal: React.Dispatch<
-  React.SetStateAction<ToastItem[]>
-> | null = null;
-
-export const toast = {
-  success: (message: string) => {
-    setToastsExternal?.((prev) => [
-      ...prev,
-      { id: ++toastId, message, type: "success" },
-    ]);
-  },
-  error: (message: string) => {
-    setToastsExternal?.((prev) => [
-      ...prev,
-      { id: ++toastId, message, type: "error" },
-    ]);
-  },
-  info: (message: string) => {
-    setToastsExternal?.((prev) => [
-      ...prev,
-      { id: ++toastId, message, type: "info" },
-    ]);
-  },
-};
-
 export const ToastProvider = () => {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
-  setToastsExternal = setToasts;
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail as ToastItem;
+      setToasts((prev) => [...prev, detail]);
+    };
+
+    window.addEventListener(TOAST_EVENT, handler);
+    return () => window.removeEventListener(TOAST_EVENT, handler);
+  }, []);
 
   const remove = (id: number) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -86,12 +56,7 @@ export const ToastProvider = () => {
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-2 items-center">
       {toasts.map((t) => (
-        <Toast
-          key={t.id}
-          message={t.message}
-          type={t.type}
-          onClose={() => remove(t.id)}
-        />
+        <ToastItemComponent key={t.id} item={t} onClose={remove} />
       ))}
     </div>
   );

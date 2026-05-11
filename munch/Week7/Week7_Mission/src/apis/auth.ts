@@ -44,12 +44,10 @@ export const updateUser = async (
   return data;
 };
 
-// 회원 탈퇴
 export const deleteUser = async (): Promise<void> => {
   await axiosInstance.delete("/v1/users");
 };
 
-// 이미지 업로드
 export const uploadImage = async (
   file: File,
 ): Promise<ResponseImageUploadDto> => {

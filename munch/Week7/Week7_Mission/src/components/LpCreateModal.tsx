@@ -19,7 +19,6 @@ const LpCreateModal = ({ onClose }: LpCreateModalProps) => {
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>([]);
 
-  // 이미지 업로드
   const { mutate: uploadImg, isPending: isUploading } = useMutation({
     mutationFn: (file: File) => uploadImage(file),
     onSuccess: ({ data }) => {
@@ -28,12 +27,10 @@ const LpCreateModal = ({ onClose }: LpCreateModalProps) => {
     },
   });
 
-  // LP 생성
   const { mutate: submitLp, isPending: isSubmitting } = useMutation({
     mutationFn: () =>
       createLp({ title, content, thumbnail, tags, published: true }),
     onSuccess: () => {
-      // LP 목록 자동 갱신
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY.lps] });
       onClose();
     },
@@ -45,7 +42,6 @@ const LpCreateModal = ({ onClose }: LpCreateModalProps) => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // 미리보기
       const reader = new FileReader();
       reader.onload = (ev) => {
         setThumbnailPreview(ev.target?.result as string);
@@ -80,7 +76,6 @@ const LpCreateModal = ({ onClose }: LpCreateModalProps) => {
       onClick={handleBackdropClick}
     >
       <div className="bg-[#1e1e1e] rounded-2xl w-full max-w-md mx-4 p-6 relative">
-        {/* 닫기 버튼 */}
         <button
           type="button"
           onClick={onClose}
@@ -89,7 +84,6 @@ const LpCreateModal = ({ onClose }: LpCreateModalProps) => {
           ✕
         </button>
 
-        {/* 썸네일 영역 */}
         <div className="flex justify-center mb-6">
           <button
             type="button"
@@ -118,7 +112,6 @@ const LpCreateModal = ({ onClose }: LpCreateModalProps) => {
           />
         </div>
 
-        {/* 입력 필드 */}
         <div className="flex flex-col gap-3">
           <input
             type="text"
@@ -135,7 +128,6 @@ const LpCreateModal = ({ onClose }: LpCreateModalProps) => {
             className="w-full bg-[#2a2a2a] text-white border border-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-[#e91e8c]"
           />
 
-          {/* 태그 입력 */}
           <div className="flex gap-2">
             <input
               type="text"
@@ -159,7 +151,6 @@ const LpCreateModal = ({ onClose }: LpCreateModalProps) => {
             </button>
           </div>
 
-          {/* 태그 목록 */}
           {tags.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {tags.map((tag) => (
@@ -180,7 +171,6 @@ const LpCreateModal = ({ onClose }: LpCreateModalProps) => {
             </div>
           )}
 
-          {/* 제출 버튼 */}
           <button
             type="button"
             onClick={() => submitLp()}

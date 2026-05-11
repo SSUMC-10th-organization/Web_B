@@ -15,7 +15,6 @@ export const getLpList = async (
   const { data } = await axiosInstance.get("/v1/lps", {
     params: paginationDto,
   });
-
   return data;
 };
 
@@ -23,7 +22,6 @@ export const getLpDetail = async (
   lpId: number,
 ): Promise<ResponseLpDetailDto> => {
   const { data } = await axiosInstance.get(`/v1/lps/${lpId}`);
-
   return data;
 };
 
@@ -50,6 +48,25 @@ export const getMyLpList = async (
   paginationDto: PaginationDto,
 ): Promise<ResponseLpListDto> => {
   const { data } = await axiosInstance.get("/v1/lps/user", {
+    params: paginationDto,
+  });
+  return data;
+};
+
+export const likeLp = async (lpId: number) => {
+  const { data } = await axiosInstance.post(`/v1/lps/${lpId}/likes`);
+  return data;
+};
+
+export const unlikeLp = async (lpId: number) => {
+  const { data } = await axiosInstance.delete(`/v1/lps/${lpId}/likes`);
+  return data;
+};
+
+export const getMyLikedLpList = async (
+  paginationDto: PaginationDto,
+): Promise<ResponseLpListDto> => {
+  const { data } = await axiosInstance.get("/v1/lps/likes/me", {
     params: paginationDto,
   });
   return data;

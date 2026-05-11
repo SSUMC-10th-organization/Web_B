@@ -3,7 +3,6 @@ export type UserSigninInformation = {
   password: string;
 };
 
-// 👇 추가
 export type UserSignupInformation = {
   name: string;
   email: string;
@@ -35,7 +34,6 @@ function validateSignin(values: UserSigninInformation) {
   return validateUser(values);
 }
 
-// 👇 추가
 function validateSignup(values: UserSignupInformation) {
   const errors = {
     name: "",
