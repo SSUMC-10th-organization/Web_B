@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import useForm from "../hooks/useForm";
 import { type UserSigninformation, validateSignin } from "../utils/validate";
 import { useEffect } from "react";
+import { useMutation } from "@tanstack/react-query";
 
 export const LoginPage = () => {
   const { login, accessToken } = useAuth();
@@ -18,15 +19,24 @@ export const LoginPage = () => {
 
   const { values, errors, touched, getInputProps } =
     useForm<UserSigninformation>({
-      initialValue: {
-        email: "",
-        password: "",
-      },
+      initialValue: { email: "", password: "" },
       validate: validateSignin,
     });
 
-  const handleSubmit = async () => {
-    await login(values);
+  const loginMutation = useMutation({
+    mutationFn: (values: UserSigninformation) => login(values),
+    onSuccess: () => {
+      const redirect = searchParams.get("redirect");
+      navigate(redirect ?? "/", { replace: true });
+    },
+    onError: (error) => {
+      console.error("로그인 실패:", error);
+      alert("로그인에 실패했습니다.");
+    },
+  });
+
+  const handleSubmit = () => {
+    loginMutation.mutate(values);
   };
 
   const handleGoogleLogin = () => {
@@ -35,6 +45,7 @@ export const LoginPage = () => {
   };
 
   const isDisabled =
+    loginMutation.isPending ||
     Object.values(errors || {}).some((error) => error.length > 0) ||
     Object.values(values).some((value) => value === "");
 
@@ -66,7 +77,7 @@ export const LoginPage = () => {
         disabled={isDisabled}
         className="w-[300px] p-[10px] bg-black text-white py-3 rounded-md text-lg font-medium hover:bg-black transition-colors cursor-pointer disabled:bg-gray-300"
       >
-        로그인
+        {loginMutation.isPending ? "로그인 중..." : "로그인"}
       </button>
       <button
         type="button"

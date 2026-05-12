@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { getMyInfo } from "../apis/auth";
 import { useState } from "react";
 import { Sidebar } from "./Sidebar";
@@ -13,6 +13,13 @@ export const Navbar = () => {
     queryKey: ["myInfo"],
     queryFn: getMyInfo,
     enabled: !!accessToken,
+  });
+
+  const logoutMutation = useMutation({
+    mutationFn: () => logout(),
+    onSuccess: () => {
+      window.location.href = "/login";
+    },
   });
 
   return (
@@ -70,10 +77,11 @@ export const Navbar = () => {
                 {data.data.name}님 반갑습니다.
               </Link>
               <button
-                onClick={logout}
+                onClick={() => logoutMutation.mutate()}
+                disabled={logoutMutation.isPending}
                 className="px-4 py-1.5 text-sm text-[#ccc] border border-[#444] rounded-md hover:bg-[#1a1a1a] transition-colors"
               >
-                로그아웃
+                {logoutMutation.isPending ? "로그아웃 중..." : "로그아웃"}
               </button>
             </>
           )}

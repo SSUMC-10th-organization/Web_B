@@ -38,8 +38,22 @@ export type LpDetail = Lp & {
   author: Author;
 };
 
+export type RequestCreateLpDto = {
+  title: string;
+  content: string;
+  thumbnail: string;
+  tags: string[];
+  published: boolean;
+};
+
 export type ResponseLpListDto = CursorBasedResponse<{
   data: Lp[];
 }>;
 
 export type ResponseLpDetailDto = CommonResponse<LpDetail>;
+
+export type ResponseCreateLpDto = CommonResponse<Lp>;
+
+export type RequestUpdateLpDto = Partial<RequestCreateLpDto>;
+
+export type ResponseDeleteLpDto = CommonResponse<boolean>;

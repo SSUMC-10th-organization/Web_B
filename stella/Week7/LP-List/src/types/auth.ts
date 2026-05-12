@@ -22,6 +22,7 @@ export type RequestSigninDto = {
   email: string;
   password: string;
 };
+
 export type ResponseSigninDto = CommonResponse<{
   id: number;
   name: string;
@@ -30,6 +31,23 @@ export type ResponseSigninDto = CommonResponse<{
 }>;
 
 export type ResponseMyInfoDto = CommonResponse<{
+  id: number;
+  name: string;
+  email: string;
+  bio: string | null;
+  avatar: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}>;
+
+// 추가
+export type RequestUpdateMyInfoDto = {
+  name: string;
+  bio?: string;
+  avatar?: string;
+};
+
+export type ResponseUpdateMyInfoDto = CommonResponse<{
   id: number;
   name: string;
   email: string;
