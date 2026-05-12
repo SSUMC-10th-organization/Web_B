@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import useGetLpList from "../hooks/queries/useGetLpList";
 import { PAGINATION_ORDER } from "../enums/common";
 
-// 스켈레톤 카드 컴포넌트
 const LpCardSkeleton = () => (
   <div className="flex flex-col gap-2">
     <div className="w-full aspect-square bg-gray-200 animate-pulse rounded-md" />
@@ -19,11 +18,11 @@ export const HomePage = () => {
 
   const {
     data,
-    isLoading, // 최초 로딩
+    isLoading,
     isError,
     refetch,
     fetchNextPage,
-    isFetchingNextPage, // 추가 페이지 로딩
+    isFetchingNextPage,
     hasNextPage,
   } = useGetLpList({ order });
 
@@ -35,7 +34,6 @@ export const HomePage = () => {
     );
   };
 
-  // IntersectionObserver로 바닥 감지 → fetchNextPage 호출
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -50,7 +48,6 @@ export const HomePage = () => {
     return () => observer.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  // 최초 로딩 — 상단 스켈레톤
   if (isLoading) {
     return (
       <div className="p-6 w-full">
@@ -82,7 +79,6 @@ export const HomePage = () => {
 
   return (
     <div className="p-6 w-full">
-      {/* 정렬 버튼 */}
       <div className="flex justify-end mb-4">
         <button
           onClick={toggleOrder}
@@ -92,7 +88,6 @@ export const HomePage = () => {
         </button>
       </div>
 
-      {/* LP 목록 */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {data?.pages.map((lp) => (
           <div
@@ -112,8 +107,6 @@ export const HomePage = () => {
                   No Image
                 </div>
               )}
-
-              {/* 호버 오버레이 */}
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3 gap-1">
                 <p className="text-white text-sm font-semibold truncate">
                   {lp.title}
@@ -127,7 +120,6 @@ export const HomePage = () => {
                 </div>
               </div>
             </div>
-
             <p className="text-sm font-medium truncate">{lp.title}</p>
             <p className="text-xs text-gray-400">
               {new Date(lp.createdAt).toLocaleDateString("ko-KR")}
@@ -135,16 +127,15 @@ export const HomePage = () => {
           </div>
         ))}
 
-        {/* 추가 페이지 로딩 — 하단 스켈레톤 */}
         {isFetchingNextPage &&
           Array.from({ length: 4 }).map((_, i) => (
             <LpCardSkeleton key={`skeleton-${i}`} />
           ))}
       </div>
 
-      {/* 바닥 감지 트리거 */}
       <div ref={bottomRef} className="h-10" />
     </div>
   );
 };
+
 export default HomePage;

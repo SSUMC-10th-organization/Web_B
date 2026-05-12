@@ -11,12 +11,9 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
   return (
     <>
-      {/* 오버레이 */}
       {isOpen && (
         <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
       )}
-
-      {/* 사이드바 */}
       <aside
         className={`fixed top-0 left-0 h-full w-64 bg-[#111] z-50 transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
@@ -31,7 +28,6 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             ✕
           </button>
         </div>
-
         <nav className="flex flex-col p-4 gap-1">
           <Link
             to="/search"
@@ -40,23 +36,13 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
           >
             🔍 찾기
           </Link>
-          {accessToken ? (
-            <Link
-              to="/my"
-              onClick={onClose}
-              className="px-4 py-3 text-sm text-[#ccc] rounded-md hover:bg-[#1a1a1a] hover:text-white transition-colors"
-            >
-              👤 마이페이지
-            </Link>
-          ) : (
-            <Link
-              to="/login"
-              onClick={onClose}
-              className="px-4 py-3 text-sm text-[#ccc] rounded-md hover:bg-[#1a1a1a] hover:text-white transition-colors"
-            >
-              👤 마이페이지
-            </Link>
-          )}
+          <Link
+            to={accessToken ? "/my" : "/login"}
+            onClick={onClose}
+            className="px-4 py-3 text-sm text-[#ccc] rounded-md hover:bg-[#1a1a1a] hover:text-white transition-colors"
+          >
+            👤 마이페이지
+          </Link>
         </nav>
       </aside>
     </>

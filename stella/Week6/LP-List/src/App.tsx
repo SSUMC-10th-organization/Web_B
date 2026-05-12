@@ -15,7 +15,7 @@ import ProtectedLayout from "./layouts/ProtectedLayout";
 import { GoogleLoginRedirectPage } from "./pages/GoogleLoginRedirectPage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { LpDetailPage } from "./pages/LpDetailPage"; // 추가
+import { LpDetailPage } from "./pages/LpDetailPage";
 
 const publicRoutes: RouteObject[] = [
   {
@@ -26,7 +26,7 @@ const publicRoutes: RouteObject[] = [
       { index: true, element: <HomePage /> },
       { path: "login", element: <LoginPage /> },
       { path: "signup", element: <SignupPage /> },
-      { path: "lp/:lpId", element: <LpDetailPage /> }, // 추가
+      { path: "lp/:lpId", element: <LpDetailPage /> },
       { path: "v1/auth/google/callback", element: <GoogleLoginRedirectPage /> },
     ],
   },
@@ -42,7 +42,6 @@ const protectedRoutes: RouteObject[] = [
         path: "my",
         element: <MyPage />,
       },
-      { path: "lps/:lpId", element: <LpDetailPage /> },
     ],
   },
 ];
@@ -61,7 +60,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <RouterProvider router={router} />;
+        <RouterProvider router={router} />
       </AuthProvider>
       {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>

@@ -18,7 +18,6 @@ export const Navbar = () => {
   return (
     <>
       <nav className="flex items-center justify-between px-6 py-4 bg-[#111] border-b border-[#222]">
-        {/* 왼쪽: 햄버거 버튼 */}
         <button
           onClick={() => setIsSidebarOpen(true)}
           className="text-white hover:text-[#ccc] transition-colors"
@@ -41,12 +40,10 @@ export const Navbar = () => {
           </svg>
         </button>
 
-        {/* 가운데: 로고 */}
         <Link to="/" className="text-white font-bold text-base tracking-tight">
           LP
         </Link>
 
-        {/* 오른쪽: 로그인 상태 */}
         <div className="flex items-center gap-2">
           {!accessToken && (
             <>
@@ -74,7 +71,7 @@ export const Navbar = () => {
               </Link>
               <button
                 onClick={logout}
-                className="px-4 py-1.5 text-sm text-black bg-white rounded-md hover:bg-[#ccc] transition-colors"
+                className="px-4 py-1.5 text-sm text-[#ccc] border border-[#444] rounded-md hover:bg-[#1a1a1a] transition-colors"
               >
                 로그아웃
               </button>

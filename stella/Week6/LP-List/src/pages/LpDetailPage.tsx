@@ -36,7 +36,6 @@ export const LpDetailPage = () => {
     hasNextPage,
   } = useGetComments(Number(lpId), { order: commentOrder });
 
-  // 비로그인 접근 차단
   useEffect(() => {
     if (!accessToken) {
       const confirmed = window.confirm(
@@ -50,7 +49,6 @@ export const LpDetailPage = () => {
     }
   }, [accessToken, lpId, navigate]);
 
-  // 댓글 무한스크롤 트리거
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -116,7 +114,6 @@ export const LpDetailPage = () => {
 
   return (
     <div className="p-6 w-full max-w-3xl mx-auto">
-      {/* 썸네일 */}
       <div className="w-full aspect-square bg-gray-100 rounded-md overflow-hidden mb-6">
         {data.thumbnail ? (
           <img
@@ -131,7 +128,6 @@ export const LpDetailPage = () => {
         )}
       </div>
 
-      {/* 제목 + 수정/삭제 */}
       <div className="flex items-start justify-between gap-4 mb-2">
         <h1 className="text-2xl font-bold">{data.title}</h1>
         <div className="flex gap-2 shrink-0">
@@ -150,14 +146,12 @@ export const LpDetailPage = () => {
         </div>
       </div>
 
-      {/* 작성자 + 날짜 */}
       <div className="flex items-center gap-3 text-sm text-gray-400 mb-4">
         <span>{data.author.name}</span>
         <span>·</span>
         <span>{new Date(data.createdAt).toLocaleDateString("ko-KR")}</span>
       </div>
 
-      {/* 좋아요 */}
       <div className="flex items-center gap-2 mb-6">
         <button
           onClick={handleProtectedAction}
@@ -168,7 +162,6 @@ export const LpDetailPage = () => {
         </button>
       </div>
 
-      {/* 태그 */}
       {data.tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-6">
           {data.tags.map((tag) => (
@@ -182,7 +175,6 @@ export const LpDetailPage = () => {
         </div>
       )}
 
-      {/* 본문 */}
       <p className="text-gray-700 leading-relaxed whitespace-pre-wrap mb-10">
         {data.content}
       </p>
@@ -227,7 +219,7 @@ export const LpDetailPage = () => {
           </button>
         </div>
 
-        {/* 댓글 목록 — 초기 로딩 스켈레톤 */}
+        {/* 댓글 목록 */}
         {isCommentsLoading ? (
           <div className="flex flex-col">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -256,7 +248,7 @@ export const LpDetailPage = () => {
               </div>
             ))}
 
-            {/* 추가 로딩 — 하단 스켈레톤 */}
+            {/* 추가 로딩 하단 스켈레톤 */}
             {isFetchingNextPage &&
               Array.from({ length: 2 }).map((_, i) => (
                 <CommentSkeleton key={`skeleton-${i}`} />
@@ -264,11 +256,9 @@ export const LpDetailPage = () => {
           </div>
         )}
 
-        {/* 무한스크롤 트리거 */}
         <div ref={bottomRef} className="h-10" />
       </div>
 
-      {/* 뒤로가기 */}
       <button
         onClick={() => navigate(-1)}
         className="mt-6 text-sm text-gray-400 hover:text-black transition-colors"

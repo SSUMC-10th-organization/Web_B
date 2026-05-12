@@ -8,6 +8,7 @@ import type { RequestSigninDto } from "../types/auth";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { LOCAL_STORAGE_KEY } from "../constants/key";
 import { postLogout, postSignin } from "../apis/auth";
+import { queryClient } from "../App";
 
 interface AuthContextType {
   accessToken: string | null;
@@ -72,6 +73,8 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
 
       setAccessToken(null);
       setRefreshToken(null);
+
+      queryClient.removeQueries({ queryKey: ["myInfo"] });
 
       alert("로그아웃 성공");
     } catch (error) {

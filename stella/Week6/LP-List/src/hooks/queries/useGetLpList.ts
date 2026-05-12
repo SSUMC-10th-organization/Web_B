@@ -10,11 +10,11 @@ function useGetLpList({ search, order, limit }: Omit<PaginationDto, "cursor">) {
       getLpList({ cursor, search, order, limit }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) =>
-      lastPage.data.hasNext ? lastPage.data.nextCursor : undefined, // data 안에 있음
+      lastPage.data.hasNext ? lastPage.data.nextCursor : undefined,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
     select: (data) => ({
-      pages: data.pages.flatMap((page) => page.data.data), // data.data 안에 배열
+      pages: data.pages.flatMap((page) => page.data.data),
       pageParams: data.pageParams,
     }),
   });

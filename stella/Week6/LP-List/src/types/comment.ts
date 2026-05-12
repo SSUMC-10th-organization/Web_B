@@ -1,6 +1,6 @@
 import type { CursorBasedResponse } from "./common";
 
-export type Author = {
+export type CommentAuthor = {
   id: number;
   name: string;
   email: string;
@@ -17,7 +17,7 @@ export type Comment = {
   authorId: number;
   createdAt: Date;
   updatedAt: Date;
-  author: Author;
+  author: CommentAuthor;
 };
 
 export type ResponseCommentListDto = CursorBasedResponse<{
