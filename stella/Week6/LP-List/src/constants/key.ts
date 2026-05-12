@@ -5,4 +5,6 @@ export const LOCAL_STORAGE_KEY = {
 
 export const QUERY_KEY = {
   lps: "lps",
+  lp: "lp",
+  lpComments: "lpComments", // 추가
 };

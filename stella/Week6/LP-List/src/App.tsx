@@ -15,6 +15,7 @@ import ProtectedLayout from "./layouts/ProtectedLayout";
 import { GoogleLoginRedirectPage } from "./pages/GoogleLoginRedirectPage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { LpDetailPage } from "./pages/LpDetailPage"; // 추가
 
 const publicRoutes: RouteObject[] = [
   {
@@ -25,6 +26,7 @@ const publicRoutes: RouteObject[] = [
       { index: true, element: <HomePage /> },
       { path: "login", element: <LoginPage /> },
       { path: "signup", element: <SignupPage /> },
+      { path: "lp/:lpId", element: <LpDetailPage /> }, // 추가
       { path: "v1/auth/google/callback", element: <GoogleLoginRedirectPage /> },
     ],
   },
