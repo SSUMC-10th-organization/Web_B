@@ -1,15 +1,26 @@
 import { api } from "../lib/axios";
 
+export const uploadImage = async (file: File): Promise<string> => {
+	const formData = new FormData();
+	formData.append("file", file);
+	const { data } = await api.post<{ data: { imageUrl: string } }>(
+		"/v1/uploads",
+		formData,
+		{ headers: { "Content-Type": "multipart/form-data" } },
+	);
+	return data.data.imageUrl;
+};
+
 export type Lp = {
 	id: number;
 	title: string;
 	content: string;
 	thumbnail: string;
-	publishedYear: number;
-	likeCount: number;
+	published: boolean;
 	createdAt: string;
 	author: { id: number; name: string; avatar?: string | null };
 	tags?: { id: number; name: string }[];
+	likes?: { id: number; userId: number; lpId: number }[];
 };
 
 export type Comment = {
@@ -22,9 +33,9 @@ export type Comment = {
 export type CreateLpBody = {
 	title: string;
 	content: string;
-	thumbnail: string;
-	publishedYear: number;
-	tags?: string[];
+	thumbnail?: string;
+	published: boolean;
+	tags: string[];
 };
 
 export type UpdateLpBody = Partial<CreateLpBody>;

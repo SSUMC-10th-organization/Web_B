@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { postSignout } from "../apis/auth";
 import { tokenStorage } from "../lib/tokenStorage";
 
@@ -8,7 +8,6 @@ interface HeaderProps {
 
 export default function Header({ onMenuClick }: HeaderProps) {
 	const navigate = useNavigate();
-	useLocation();
 	const nickname = localStorage.getItem("nickname");
 	const isLoggedIn = !!tokenStorage.getAccessToken();
 
@@ -24,33 +23,13 @@ export default function Header({ onMenuClick }: HeaderProps) {
 	};
 
 	return (
-		<header
-			style={{
-				display: "flex",
-				alignItems: "center",
-				justifyContent: "space-between",
-				padding: "0 1.5rem",
-				height: "60px",
-				backgroundColor: "#000",
-				position: "sticky",
-				top: 0,
-				zIndex: 10,
-			}}
-		>
+		<header className="flex items-center justify-between px-6 h-[60px] bg-black sticky top-0 z-10">
 			{/* 왼쪽: 햄버거 + 로고 */}
-			<div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+			<div className="flex items-center gap-4">
 				<button
 					type="button"
 					onClick={onMenuClick}
-					style={{
-						background: "none",
-						border: "none",
-						cursor: "pointer",
-						padding: 0,
-						display: "flex",
-						alignItems: "center",
-						color: "#fff",
-					}}
+					className="bg-transparent border-0 cursor-pointer p-0 flex items-center text-white"
 					aria-label="메뉴"
 				>
 					<svg
@@ -70,38 +49,22 @@ export default function Header({ onMenuClick }: HeaderProps) {
 						/>
 					</svg>
 				</button>
-				<Link
-					to="/"
-					style={{
-						fontWeight: "bold",
-						fontSize: "1.25rem",
-						textDecoration: "none",
-						color: "#ec4899",
-					}}
-				>
+				<Link to="/" className="font-bold text-xl no-underline text-pink-500">
 					돌려돌려LP판
 				</Link>
 			</div>
 
 			{/* 오른쪽: 로그인 상태 */}
-			<div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+			<div className="flex items-center gap-3">
 				{isLoggedIn ? (
 					<>
-						<span style={{ fontSize: "0.9rem", color: "#d1d5db" }}>
+						<span className="text-sm text-gray-300">
 							{nickname}님 반갑습니다.
 						</span>
 						<button
 							type="button"
 							onClick={handleLogout}
-							style={{
-								padding: "0.4rem 1rem",
-								border: "1px solid #4b5563",
-								borderRadius: "6px",
-								cursor: "pointer",
-								background: "transparent",
-								color: "#fff",
-								fontSize: "0.9rem",
-							}}
+							className="px-4 py-[0.4rem] border border-gray-600 rounded-md cursor-pointer bg-transparent text-white text-sm"
 						>
 							로그아웃
 						</button>
@@ -111,15 +74,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 						<Link to="/login">
 							<button
 								type="button"
-								style={{
-									padding: "0.4rem 1rem",
-									border: "1px solid #4b5563",
-									borderRadius: "6px",
-									cursor: "pointer",
-									background: "transparent",
-									color: "#fff",
-									fontSize: "0.9rem",
-								}}
+								className="px-4 py-[0.4rem] border border-gray-600 rounded-md cursor-pointer bg-transparent text-white text-sm"
 							>
 								로그인
 							</button>
@@ -127,16 +82,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 						<Link to="/signup">
 							<button
 								type="button"
-								style={{
-									padding: "0.4rem 1rem",
-									border: "none",
-									borderRadius: "6px",
-									cursor: "pointer",
-									background: "#ec4899",
-									color: "#fff",
-									fontSize: "0.9rem",
-									fontWeight: "bold",
-								}}
+								className="px-4 py-[0.4rem] border-0 rounded-md cursor-pointer bg-pink-500 text-white text-sm font-bold"
 							>
 								회원가입
 							</button>
