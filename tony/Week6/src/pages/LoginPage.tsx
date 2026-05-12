@@ -27,49 +27,20 @@ export default function LoginPage() {
 		},
 	});
 
-	const inputStyle = {
-		width: "100%",
-		padding: "0.75rem 1rem",
-		borderRadius: "6px",
-		border: "1px solid #d1d5db",
-		fontSize: "0.95rem",
-		boxSizing: "border-box" as const,
-	};
+	const inputClass =
+		"w-full px-4 py-3 rounded-md border border-gray-300 text-[0.95rem]";
 
 	return (
-		<div
-			style={{
-				display: "flex",
-				flexDirection: "column",
-				alignItems: "center",
-				justifyContent: "center",
-				minHeight: "100vh",
-			}}
-		>
-			<div
-				style={{
-					display: "flex",
-					flexDirection: "column",
-					width: "360px",
-					gap: "1rem",
-				}}
-			>
-				<h1
-					style={{
-						textAlign: "center",
-						fontSize: "1.25rem",
-						fontWeight: "bold",
-					}}
-				>
-					로그인
-				</h1>
+		<div className="flex flex-col items-center justify-center min-h-screen">
+			<div className="flex flex-col w-[360px] gap-4">
+				<h1 className="text-center text-xl font-bold">로그인</h1>
 
 				<input
 					type="email"
 					placeholder="이메일"
 					value={email}
 					onChange={(e) => setEmail(e.target.value)}
-					style={inputStyle}
+					className={inputClass}
 				/>
 				<input
 					type="password"
@@ -79,25 +50,16 @@ export default function LoginPage() {
 					onKeyDown={(e) => {
 						if (e.key === "Enter") signin();
 					}}
-					style={inputStyle}
+					className={inputClass}
 				/>
 
-				{error && <p style={{ color: "red", fontSize: "0.85rem" }}>{error}</p>}
+				{error && <p className="text-red-500 text-[0.85rem]">{error}</p>}
 
 				<button
 					type="button"
 					onClick={() => signin()}
 					disabled={isPending}
-					style={{
-						padding: "0.75rem",
-						borderRadius: "6px",
-						border: "none",
-						background: "#ec4899",
-						color: "#fff",
-						fontWeight: "bold",
-						cursor: isPending ? "not-allowed" : "pointer",
-						opacity: isPending ? 0.7 : 1,
-					}}
+					className={`py-3 rounded-md border-0 bg-pink-500 text-white font-bold ${isPending ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}
 				>
 					{isPending ? "로그인 중..." : "로그인"}
 				</button>
@@ -105,13 +67,7 @@ export default function LoginPage() {
 				<button
 					type="button"
 					onClick={() => navigate("/signup")}
-					style={{
-						background: "none",
-						border: "none",
-						color: "#6b7280",
-						cursor: "pointer",
-						fontSize: "0.9rem",
-					}}
+					className="bg-transparent border-0 text-gray-500 cursor-pointer text-[0.9rem]"
 				>
 					계정이 없으신가요? 회원가입
 				</button>

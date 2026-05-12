@@ -23,17 +23,13 @@ export default function MainLayout() {
 	}, [sidebarOpen]);
 
 	return (
-		<div
-			style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
-		>
+		<div className="flex flex-col min-h-screen">
 			<Header onMenuClick={() => setSidebarOpen((v) => !v)} />
-			<div style={{ display: "flex", flex: 1, position: "relative" }}>
+			<div className="flex flex-1 relative">
 				<div ref={sidebarRef}>
 					<Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 				</div>
-				<main
-					style={{ flex: 1, padding: "1.5rem", overflowY: "auto", minWidth: 0 }}
-				>
+				<main className="flex-1 p-6 overflow-y-auto min-w-0">
 					<Outlet />
 				</main>
 			</div>

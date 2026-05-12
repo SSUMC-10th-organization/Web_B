@@ -1,46 +1,12 @@
-const shimmerStyle = {
-	background: "linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%)",
-	backgroundSize: "400px 100%",
-	animation: "shimmer 1.4s ease infinite",
-} as const;
-
 export default function SkeletonComment() {
 	return (
-		<div
-			style={{
-				display: "flex",
-				gap: "0.75rem",
-				padding: "0.75rem 0",
-				borderBottom: "1px solid #f3f4f6",
-				alignItems: "flex-start",
-			}}
-		>
+		<div className="flex gap-3 py-3 border-b border-gray-100 items-start">
 			{/* 아바타 원형 */}
-			<div
-				style={{
-					width: 32,
-					height: 32,
-					borderRadius: "50%",
-					flexShrink: 0,
-					...shimmerStyle,
-				}}
-			/>
+			<div className="w-8 h-8 rounded-full shrink-0 skeleton" />
 			{/* 이름 + 내용 */}
-			<div
-				style={{
-					flex: 1,
-					display: "flex",
-					flexDirection: "column",
-					gap: "0.4rem",
-					paddingTop: "0.2rem",
-				}}
-			>
-				<div
-					style={{ width: "28%", height: 12, borderRadius: 4, ...shimmerStyle }}
-				/>
-				<div
-					style={{ width: "80%", height: 12, borderRadius: 4, ...shimmerStyle }}
-				/>
+			<div className="flex-1 flex flex-col gap-[0.4rem] pt-[0.2rem]">
+				<div className="w-[28%] h-3 rounded skeleton" />
+				<div className="w-[80%] h-3 rounded skeleton" />
 			</div>
 		</div>
 	);

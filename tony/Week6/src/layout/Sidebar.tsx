@@ -30,18 +30,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 		},
 	});
 
-	const linkStyle = ({ isActive }: { isActive: boolean }) => ({
-		display: "flex",
-		alignItems: "center",
-		gap: "0.5rem",
-		padding: "0.6rem 1rem",
-		borderRadius: "6px",
-		textDecoration: "none",
-		color: isActive ? "#ec4899" : "#374151",
-		fontWeight: isActive ? ("bold" as const) : ("normal" as const),
-		backgroundColor: isActive ? "#fdf2f8" : "transparent",
-		fontSize: "0.95rem",
-	});
+	const linkStyle = ({ isActive }: { isActive: boolean }) =>
+		`flex items-center gap-2 px-4 py-[0.6rem] rounded-md no-underline text-[0.95rem] ${
+			isActive
+				? "text-pink-500 font-bold bg-[#fdf2f8]"
+				: "text-gray-700 font-normal"
+		}`;
 
 	return (
 		<>
@@ -51,50 +45,26 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 					type="button"
 					onClick={onClose}
 					aria-label="사이드바 닫기"
-					style={{
-						position: "fixed",
-						inset: 0,
-						background: "rgba(0,0,0,0.3)",
-						zIndex: 8,
-						top: "60px",
-						border: "none",
-						cursor: "default",
-						padding: 0,
-					}}
+					className="fixed inset-0 bg-black/30 z-[8] top-[60px] border-0 cursor-default p-0"
 				/>
 			)}
 
 			<aside
-				style={{
-					width: "200px",
-					minHeight: "calc(100vh - 60px)",
-					borderRight: "1px solid #e5e7eb",
-					padding: "1.25rem 0.75rem",
-					backgroundColor: "#fff",
-					flexShrink: 0,
-					display: "flex",
-					flexDirection: "column",
-					justifyContent: "space-between",
-					...(isMobile
-						? {
-								position: "fixed" as const,
-								top: "60px",
-								left: 0,
-								zIndex: 9,
-								transform: isOpen ? "translateX(0)" : "translateX(-100%)",
-								transition: "transform 0.25s ease",
-								boxShadow: isOpen ? "4px 0 12px rgba(0,0,0,0.15)" : "none",
-							}
-						: {}),
-				}}
+				className={`w-[200px] min-h-[calc(100vh-60px)] border-r border-gray-200 py-5 px-3 bg-white shrink-0 flex flex-col justify-between ${
+					isMobile
+						? `fixed top-[60px] left-0 z-[9] transition-transform duration-[250ms] ease-in-out ${
+								isOpen
+									? "translate-x-0 shadow-[4px_0_12px_rgba(0,0,0,0.15)]"
+									: "-translate-x-full"
+							}`
+						: ""
+				}`}
 			>
-				<nav
-					style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}
-				>
-					<NavLink to="/" style={linkStyle} end>
+				<nav className="flex flex-col gap-1">
+					<NavLink to="/" className={linkStyle} end>
 						🔍 찾기
 					</NavLink>
-					<NavLink to="/my" style={linkStyle}>
+					<NavLink to="/my" className={linkStyle}>
 						👤 마이페이지
 					</NavLink>
 				</nav>
@@ -103,15 +73,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 				<button
 					type="button"
 					onClick={() => setShowModal(true)}
-					style={{
-						background: "none",
-						border: "none",
-						color: "#9ca3af",
-						cursor: "pointer",
-						fontSize: "0.85rem",
-						textAlign: "left",
-						padding: "0.6rem 1rem",
-					}}
+					className="bg-transparent border-0 text-gray-400 cursor-pointer text-[0.85rem] text-left px-4 py-[0.6rem]"
 				>
 					일시탈퇴
 				</button>
@@ -119,75 +81,26 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
 			{/* 탈퇴 확인 모달 */}
 			{showModal && (
-				<div
-					style={{
-						position: "fixed",
-						inset: 0,
-						background: "rgba(0,0,0,0.7)",
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						zIndex: 1000,
-					}}
-				>
-					<div
-						style={{
-							background: "#1c1c1e",
-							borderRadius: "16px",
-							padding: "2rem",
-							width: "100%",
-							maxWidth: "320px",
-							display: "flex",
-							flexDirection: "column",
-							alignItems: "center",
-							gap: "1.5rem",
-							position: "relative",
-						}}
-					>
+				<div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[1000]">
+					<div className="bg-[#1c1c1e] rounded-2xl p-8 w-full max-w-[320px] flex flex-col items-center gap-6 relative">
 						{/* 닫기 */}
 						<button
 							type="button"
 							onClick={() => setShowModal(false)}
-							style={{
-								position: "absolute",
-								top: "1rem",
-								right: "1rem",
-								background: "none",
-								border: "none",
-								color: "#fff",
-								fontSize: "1.1rem",
-								cursor: "pointer",
-							}}
+							className="absolute top-4 right-4 bg-transparent border-0 text-white text-[1.1rem] cursor-pointer"
 						>
 							✕
 						</button>
 
-						<p
-							style={{
-								color: "#fff",
-								fontSize: "1rem",
-								fontWeight: "bold",
-								margin: 0,
-								textAlign: "center",
-							}}
-						>
+						<p className="text-white text-base font-bold m-0 text-center">
 							정말 탈퇴하시겠습니까?
 						</p>
 
-						<div style={{ display: "flex", gap: "0.75rem", width: "100%" }}>
+						<div className="flex gap-3 w-full">
 							<button
 								type="button"
 								onClick={() => setShowModal(false)}
-								style={{
-									flex: 1,
-									padding: "0.7rem",
-									borderRadius: "8px",
-									border: "1px solid #3a3a3c",
-									background: "none",
-									color: "#fff",
-									cursor: "pointer",
-									fontSize: "0.95rem",
-								}}
+								className="flex-1 py-[0.7rem] rounded-lg border border-[#3a3a3c] bg-transparent text-white cursor-pointer text-[0.95rem]"
 							>
 								아니오
 							</button>
@@ -195,18 +108,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 								type="button"
 								onClick={() => withdraw()}
 								disabled={isPending}
-								style={{
-									flex: 1,
-									padding: "0.7rem",
-									borderRadius: "8px",
-									border: "none",
-									background: "#ec4899",
-									color: "#fff",
-									cursor: isPending ? "not-allowed" : "pointer",
-									fontSize: "0.95rem",
-									fontWeight: "bold",
-									opacity: isPending ? 0.7 : 1,
-								}}
+								className={`flex-1 py-[0.7rem] rounded-lg border-0 bg-pink-500 text-white text-[0.95rem] font-bold ${isPending ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}
 							>
 								{isPending ? "탈퇴 중..." : "예"}
 							</button>

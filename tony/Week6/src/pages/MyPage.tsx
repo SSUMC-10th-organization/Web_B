@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getMyLikedLps, getMyLps } from "../apis/lp";
-import { type User, getMyProfile, updateMyProfile } from "../apis/user";
+import { getMyProfile, type User, updateMyProfile } from "../apis/user";
 import LpCard from "../components/LpCard";
 import { tokenStorage } from "../lib/tokenStorage";
 
@@ -20,10 +20,9 @@ export default function MyPage() {
 	const [activeTab, setActiveTab] = useState<Tab>("liked");
 	const [order, setOrder] = useState<Order>("desc");
 
-	if (!isLoggedIn) {
-		navigate("/login", { replace: true });
-		return null;
-	}
+	useEffect(() => {
+		if (!isLoggedIn) navigate("/login", { replace: true });
+	}, [isLoggedIn, navigate]);
 
 	const { data: me } = useQuery({
 		queryKey: ["me"],
@@ -43,7 +42,6 @@ export default function MyPage() {
 		enabled: activeTab === "mine",
 	});
 
-	// 닉네임 optimistic update
 	const { mutate: saveProfile, isPending } = useMutation({
 		mutationFn: updateMyProfile,
 		onMutate: async (newData) => {
@@ -77,46 +75,19 @@ export default function MyPage() {
 
 	const lps = activeTab === "liked" ? likedData?.data : mineData?.data;
 
+	if (!isLoggedIn) return null;
+
 	return (
-		<div
-			style={{
-				minHeight: "100vh",
-				background: "#000",
-				color: "#fff",
-				paddingBottom: "3rem",
-			}}
-		>
+		<div className="min-h-screen bg-black text-white pb-12">
 			{/* 프로필 섹션 */}
-			<div
-				style={{
-					maxWidth: "800px",
-					margin: "0 auto",
-					padding: "2.5rem 1.5rem 0",
-					display: "flex",
-					alignItems: "center",
-					gap: "2rem",
-					position: "relative",
-				}}
-			>
+			<div className="max-w-200 mx-auto px-6 pt-10 flex items-center gap-8 relative">
 				{/* 아바타 */}
-				<div
-					style={{
-						width: "100px",
-						height: "100px",
-						borderRadius: "50%",
-						overflow: "hidden",
-						background: "#374151",
-						flexShrink: 0,
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-					}}
-				>
+				<div className="w-25 h-25 rounded-full overflow-hidden bg-gray-700 shrink-0 flex items-center justify-center">
 					{me?.avatar ? (
 						<img
 							src={me.avatar}
 							alt={me.name}
-							style={{ width: "100%", height: "100%", objectFit: "cover" }}
+							className="w-full h-full object-cover"
 						/>
 					) : (
 						<svg
@@ -136,23 +107,14 @@ export default function MyPage() {
 
 				{/* 이름 / bio / email */}
 				{showEdit ? (
-					<div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", flex: 1 }}>
-						<div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+					<div className="flex flex-col gap-[0.6rem] flex-1">
+						<div className="flex items-center gap-2">
 							<input
 								// biome-ignore lint/a11y/noAutofocus: 편집 모드 진입 시 포커스
 								autoFocus
 								value={editName}
 								onChange={(e) => setEditName(e.target.value)}
-								style={{
-									background: "transparent",
-									border: "1px solid #4b5563",
-									borderRadius: "6px",
-									color: "#fff",
-									padding: "0.4rem 0.75rem",
-									fontSize: "1rem",
-									width: "200px",
-									outline: "none",
-								}}
+								className="bg-transparent border border-gray-600 rounded-md text-white px-3 py-[0.4rem] text-base w-50 outline-none"
 							/>
 							<button
 								type="button"
@@ -163,13 +125,7 @@ export default function MyPage() {
 										bio: editBio || undefined,
 									})
 								}
-								style={{
-									background: "none",
-									border: "none",
-									color: "#4ade80",
-									fontSize: "1.3rem",
-									cursor: isPending ? "wait" : "pointer",
-								}}
+								className={`bg-transparent border-0 text-green-400 text-[1.3rem] ${isPending ? "cursor-wait" : "cursor-pointer"}`}
 							>
 								✓
 							</button>
@@ -178,30 +134,17 @@ export default function MyPage() {
 							value={editBio}
 							onChange={(e) => setEditBio(e.target.value)}
 							placeholder="Bio (선택)"
-							style={{
-								background: "transparent",
-								border: "1px solid #4b5563",
-								borderRadius: "6px",
-								color: "#fff",
-								padding: "0.4rem 0.75rem",
-								fontSize: "0.9rem",
-								width: "200px",
-								outline: "none",
-							}}
+							className="bg-transparent border border-gray-600 rounded-md text-white px-3 py-[0.4rem] text-[0.9rem] w-50 outline-none"
 						/>
-						<span style={{ color: "#6b7280", fontSize: "0.85rem" }}>
-							{me?.email}
-						</span>
+						<span className="text-gray-500 text-[0.85rem]">{me?.email}</span>
 					</div>
 				) : (
-					<div style={{ display: "flex", flexDirection: "column", gap: "0.3rem", flex: 1 }}>
-						<span style={{ fontWeight: "bold", fontSize: "1.3rem" }}>
-							{me?.name}
-						</span>
+					<div className="flex flex-col gap-[0.3rem] flex-1">
+						<span className="font-bold text-[1.3rem]">{me?.name}</span>
 						{me?.bio && (
-							<span style={{ color: "#9ca3af", fontSize: "0.9rem" }}>{me.bio}</span>
+							<span className="text-gray-400 text-[0.9rem]">{me.bio}</span>
 						)}
-						<span style={{ color: "#6b7280", fontSize: "0.85rem" }}>{me?.email}</span>
+						<span className="text-gray-500 text-[0.85rem]">{me?.email}</span>
 					</div>
 				)}
 
@@ -210,16 +153,7 @@ export default function MyPage() {
 					<button
 						type="button"
 						onClick={openEdit}
-						style={{
-							position: "absolute",
-							top: "2.5rem",
-							right: "1.5rem",
-							background: "none",
-							border: "none",
-							color: "#9ca3af",
-							fontSize: "1.2rem",
-							cursor: "pointer",
-						}}
+						className="absolute top-10 right-6 bg-transparent border-0 text-gray-400 text-[1.2rem] cursor-pointer"
 					>
 						⚙️
 					</button>
@@ -227,23 +161,10 @@ export default function MyPage() {
 			</div>
 
 			{/* 구분선 */}
-			<div
-				style={{
-					maxWidth: "800px",
-					margin: "1.5rem auto 0",
-					borderBottom: "1px solid #374151",
-				}}
-			/>
+			<div className="max-w-200 mx-auto mt-6 border-b border-gray-700" />
 
 			{/* 탭 */}
-			<div
-				style={{
-					maxWidth: "800px",
-					margin: "0 auto",
-					display: "flex",
-					borderBottom: "1px solid #1f2937",
-				}}
-			>
+			<div className="max-w-200 mx-auto flex border-b border-gray-800">
 				{(
 					[
 						{ key: "liked", label: "내가 좋아요 한 LP" },
@@ -254,18 +175,11 @@ export default function MyPage() {
 						key={key}
 						type="button"
 						onClick={() => setActiveTab(key)}
-						style={{
-							flex: 1,
-							padding: "0.9rem 0",
-							background: "none",
-							border: "none",
-							cursor: "pointer",
-							color: activeTab === key ? "#fff" : "#6b7280",
-							fontWeight: activeTab === key ? "bold" : "normal",
-							fontSize: "0.95rem",
-							borderBottom: activeTab === key ? "2px solid #fff" : "2px solid transparent",
-							marginBottom: "-1px",
-						}}
+						className={`flex-1 py-[0.9rem] bg-transparent border-0 cursor-pointer text-[0.95rem] -mb-px ${
+							activeTab === key
+								? "text-white font-bold border-b-2 border-white"
+								: "text-gray-500 font-normal border-b-2 border-transparent"
+						}`}
 					>
 						{label}
 					</button>
@@ -273,30 +187,19 @@ export default function MyPage() {
 			</div>
 
 			{/* 정렬 + LP 그리드 */}
-			<div
-				style={{
-					maxWidth: "800px",
-					margin: "1.5rem auto 0",
-					padding: "0 1.5rem",
-				}}
-			>
+			<div className="max-w-200 mx-auto mt-6 px-6">
 				{/* 정렬 버튼 */}
-				<div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem", marginBottom: "1rem" }}>
+				<div className="flex justify-end gap-2 mb-4">
 					{(["asc", "desc"] as const).map((o) => (
 						<button
 							key={o}
 							type="button"
 							onClick={() => setOrder(o)}
-							style={{
-								padding: "0.35rem 0.9rem",
-								borderRadius: "6px",
-								border: `1px solid ${order === o ? "#fff" : "#4b5563"}`,
-								background: order === o ? "#fff" : "transparent",
-								color: order === o ? "#000" : "#9ca3af",
-								cursor: "pointer",
-								fontSize: "0.85rem",
-								fontWeight: order === o ? "bold" : "normal",
-							}}
+							className={`px-[0.9rem] py-[0.35rem] rounded-md border cursor-pointer text-[0.85rem] ${
+								order === o
+									? "border-white bg-white text-black font-bold"
+									: "border-gray-600 bg-transparent text-gray-400 font-normal"
+							}`}
 						>
 							{o === "asc" ? "오래된순" : "최신순"}
 						</button>
@@ -305,27 +208,16 @@ export default function MyPage() {
 
 				{/* LP 그리드 */}
 				{lps && lps.length > 0 ? (
-					<div
-						style={{
-							display: "grid",
-							gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-							gap: "0.75rem",
-						}}
-					>
+					<div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3">
 						{lps.map((lp) => (
 							<LpCard key={lp.id} lp={lp} />
 						))}
 					</div>
 				) : (
-					<div
-						style={{
-							textAlign: "center",
-							color: "#6b7280",
-							padding: "4rem 0",
-							fontSize: "0.95rem",
-						}}
-					>
-						{activeTab === "liked" ? "좋아요한 LP가 없어요." : "작성한 LP가 없어요."}
+					<div className="text-center text-gray-500 py-16 text-[0.95rem]">
+						{activeTab === "liked"
+							? "좋아요한 LP가 없어요."
+							: "작성한 LP가 없어요."}
 					</div>
 				)}
 			</div>

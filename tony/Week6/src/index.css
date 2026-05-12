@@ -1,3 +1,11 @@
+@import "tailwindcss";
+
+.skeleton {
+	background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+	background-size: 400px 100%;
+	animation: shimmer 1.4s ease infinite;
+}
+
 :root {
 	--text: #6b6375;
 	--text-h: #08060d;

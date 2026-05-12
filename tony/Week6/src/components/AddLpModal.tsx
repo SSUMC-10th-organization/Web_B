@@ -17,7 +17,6 @@ export default function AddLpModal({ onClose }: Props) {
 	const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 	const [thumbnail, setThumbnail] = useState<string | undefined>(undefined);
 	const [isUploading, setIsUploading] = useState(false);
-
 	const [submitError, setSubmitError] = useState("");
 
 	const { mutate, isPending } = useMutation({
@@ -59,111 +58,60 @@ export default function AddLpModal({ onClose }: Props) {
 
 	const handleSubmit = () => {
 		if (!title.trim() || tags.length === 0) return;
-		mutate({
-			title,
-			content,
-			thumbnail,
-			published: true,
-			tags,
-		});
+		mutate({ title, content, thumbnail, published: true, tags });
 	};
 
-	const inputStyle: React.CSSProperties = {
-		background: "#2c2c2e",
-		border: "1px solid #3a3a3c",
-		borderRadius: "8px",
-		color: "#fff",
-		padding: "0.75rem 1rem",
-		fontSize: "0.95rem",
-		outline: "none",
-		width: "100%",
-		boxSizing: "border-box",
-	};
+	const isSubmittable = !!title.trim() && tags.length > 0 && !isUploading;
+
+	const inputClass =
+		"bg-[#2c2c2e] border border-[#3a3a3c] rounded-lg text-white px-4 py-3 text-[0.95rem] outline-none w-full";
 
 	return (
+		// biome-ignore lint/a11y/noStaticElementInteractions: 모달 오버레이 클릭으로 닫기
+		// biome-ignore lint/a11y/useKeyWithClickEvents: 모달 오버레이 클릭으로 닫기
 		<div
-			style={{
-				position: "fixed",
-				inset: 0,
-				background: "rgba(0,0,0,0.7)",
-				display: "flex",
-				alignItems: "center",
-				justifyContent: "center",
-				zIndex: 1000,
-			}}
+			className="fixed inset-0 bg-black/70 flex items-center justify-center z-1000"
 			onClick={onClose}
 		>
+			{/* biome-ignore lint/a11y/noStaticElementInteractions: 이벤트 버블링 방지 */}
+			{/* biome-ignore lint/a11y/useKeyWithClickEvents: 이벤트 버블링 방지 */}
 			<div
-				style={{
-					background: "#1c1c1e",
-					borderRadius: "16px",
-					padding: "2rem",
-					width: "100%",
-					maxWidth: "380px",
-					position: "relative",
-					display: "flex",
-					flexDirection: "column",
-					gap: "1rem",
-				}}
+				className="bg-[#1c1c1e] rounded-2xl p-8 w-full max-w-95 relative flex flex-col gap-4"
 				onClick={(e) => e.stopPropagation()}
 			>
 				{/* 닫기 버튼 */}
 				<button
 					type="button"
 					onClick={onClose}
-					style={{
-						position: "absolute",
-						top: "1rem",
-						right: "1rem",
-						background: "none",
-						border: "none",
-						color: "#fff",
-						fontSize: "1.25rem",
-						cursor: "pointer",
-						lineHeight: 1,
-					}}
+					className="absolute top-4 right-4 bg-transparent border-0 text-white text-xl cursor-pointer leading-none"
 				>
 					✕
 				</button>
 
 				{/* LP 이미지 (클릭 시 파일 선택) */}
+				{/* biome-ignore lint/a11y/noStaticElementInteractions: 파일 선택 트리거 */}
+				{/* biome-ignore lint/a11y/useKeyWithClickEvents: 파일 선택 트리거 */}
 				<div
-					style={{ display: "flex", justifyContent: "center", cursor: isUploading ? "wait" : "pointer", position: "relative" }}
+					className={`flex justify-center relative ${isUploading ? "cursor-wait" : "cursor-pointer"}`}
 					onClick={() => !isUploading && fileInputRef.current?.click()}
 				>
 					{previewUrl ? (
-						<div style={{ position: "relative", width: "200px", height: "200px" }}>
+						<div className="relative w-50 h-50">
 							<img
 								src={previewUrl}
 								alt="LP thumbnail"
-								style={{
-									width: "200px",
-									height: "200px",
-									borderRadius: "50%",
-									objectFit: "cover",
-									opacity: isUploading ? 0.5 : 1,
-								}}
+								className={`w-50 h-50 rounded-full object-cover ${isUploading ? "opacity-50" : "opacity-100"}`}
 							/>
 							{isUploading && (
-								<div style={{
-									position: "absolute",
-									inset: 0,
-									display: "flex",
-									alignItems: "center",
-									justifyContent: "center",
-									color: "#fff",
-									fontSize: "0.85rem",
-								}}>
+								<div className="absolute inset-0 flex items-center justify-center text-white text-[0.85rem]">
 									업로드 중...
 								</div>
 							)}
 						</div>
 					) : (
 						<div
+							className="w-50 h-50 rounded-full"
 							style={{
-								width: "200px",
-								height: "200px",
-								borderRadius: "50%",
 								background:
 									"radial-gradient(circle, #888 0%, #888 8%, #111 8%, #111 38%, #1a1a1a 38%, #1a1a1a 41%, #111 41%)",
 								boxShadow: "0 0 0 1px #444",
@@ -174,7 +122,7 @@ export default function AddLpModal({ onClose }: Props) {
 						ref={fileInputRef}
 						type="file"
 						accept="image/*"
-						style={{ display: "none" }}
+						className="hidden"
 						onChange={handleFileChange}
 					/>
 				</div>
@@ -185,7 +133,7 @@ export default function AddLpModal({ onClose }: Props) {
 					placeholder="LP Name"
 					value={title}
 					onChange={(e) => setTitle(e.target.value)}
-					style={inputStyle}
+					className={inputClass}
 				/>
 
 				{/* LP Content */}
@@ -194,32 +142,23 @@ export default function AddLpModal({ onClose }: Props) {
 					placeholder="LP Content"
 					value={content}
 					onChange={(e) => setContent(e.target.value)}
-					style={inputStyle}
+					className={inputClass}
 				/>
 
 				{/* LP Tag 입력 */}
-				<div style={{ display: "flex", gap: "0.5rem" }}>
+				<div className="flex gap-2">
 					<input
 						type="text"
 						placeholder="LP Tag"
 						value={tagInput}
 						onChange={(e) => setTagInput(e.target.value)}
 						onKeyDown={(e) => e.key === "Enter" && handleAddTag()}
-						style={{ ...inputStyle, width: "auto", flex: 1 }}
+						className="bg-[#2c2c2e] border border-[#3a3a3c] rounded-lg text-white px-4 py-3 text-[0.95rem] outline-none flex-1 min-w-0"
 					/>
 					<button
 						type="button"
 						onClick={handleAddTag}
-						style={{
-							background: "#3a3a3c",
-							border: "none",
-							borderRadius: "8px",
-							color: "#fff",
-							padding: "0.75rem 1.1rem",
-							cursor: "pointer",
-							fontWeight: "bold",
-							whiteSpace: "nowrap",
-						}}
+						className="bg-[#3a3a3c] border-0 rounded-lg text-white px-[1.1rem] py-3 cursor-pointer font-bold whitespace-nowrap"
 					>
 						Add
 					</button>
@@ -227,21 +166,11 @@ export default function AddLpModal({ onClose }: Props) {
 
 				{/* 태그 목록 */}
 				{tags.length > 0 && (
-					<div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+					<div className="flex flex-wrap gap-2">
 						{tags.map((tag) => (
 							<span
 								key={tag}
-								style={{
-									background: "#2c2c2e",
-									border: "1px solid #3a3a3c",
-									borderRadius: "999px",
-									color: "#fff",
-									padding: "0.3rem 0.75rem",
-									fontSize: "0.85rem",
-									display: "flex",
-									alignItems: "center",
-									gap: "0.4rem",
-								}}
+								className="bg-[#2c2c2e] border border-[#3a3a3c] rounded-full text-white px-3 py-[0.3rem] text-[0.85rem] flex items-center gap-[0.4rem]"
 							>
 								{tag}
 								<button
@@ -249,15 +178,7 @@ export default function AddLpModal({ onClose }: Props) {
 									onClick={() =>
 										setTags((prev) => prev.filter((t) => t !== tag))
 									}
-									style={{
-										background: "none",
-										border: "none",
-										color: "#aaa",
-										cursor: "pointer",
-										fontSize: "0.8rem",
-										padding: 0,
-										lineHeight: 1,
-									}}
+									className="bg-transparent border-0 text-[#aaa] cursor-pointer text-[0.8rem] p-0 leading-none"
 								>
 									✕
 								</button>
@@ -268,28 +189,21 @@ export default function AddLpModal({ onClose }: Props) {
 
 				{/* 에러 메시지 */}
 				{submitError && (
-					<p style={{ color: "#f87171", fontSize: "0.85rem", margin: 0 }}>
-						{submitError}
-					</p>
+					<p className="text-red-400 text-[0.85rem] m-0">{submitError}</p>
 				)}
 
 				{/* Add LP 버튼 */}
 				<button
 					type="button"
 					onClick={handleSubmit}
-					disabled={isPending || isUploading || !title.trim() || tags.length === 0}
-					style={{
-						background: title.trim() && tags.length > 0 && !isUploading ? "#ec4899" : "#3a3a3c",
-						border: "none",
-						borderRadius: "8px",
-						color: "#fff",
-						padding: "0.9rem",
-						fontSize: "1rem",
-						fontWeight: "bold",
-						cursor: isPending || isUploading || !title.trim() || tags.length === 0 ? "not-allowed" : "pointer",
-						marginTop: "0.25rem",
-						transition: "background 0.2s",
-					}}
+					disabled={
+						isPending || isUploading || !title.trim() || tags.length === 0
+					}
+					className={`border-0 rounded-lg text-white py-[0.9rem] text-base font-bold mt-1 transition-colors ${
+						isSubmittable
+							? "bg-pink-500 cursor-pointer"
+							: "bg-[#3a3a3c] cursor-not-allowed"
+					}`}
 				>
 					{isPending ? "추가 중..." : "Add LP"}
 				</button>
