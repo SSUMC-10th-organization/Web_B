@@ -1,6 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { getLps, type Lp } from "../apis/lp";
+import AddLpModal from "../components/AddLpModal";
 import LpCard from "../components/LpCard";
 import SkeletonCard from "../components/SkeletonCard";
 
@@ -8,6 +9,7 @@ type LpPage = { data: Lp[]; hasNext: boolean; nextCursor: number | null };
 
 export default function HomePage() {
 	const [order, setOrder] = useState<"asc" | "desc">("desc");
+	const [showModal, setShowModal] = useState(false);
 	const sentinelRef = useRef<HTMLDivElement>(null);
 
 	const {
@@ -146,6 +148,7 @@ export default function HomePage() {
 			{/* 플로팅 버튼 */}
 			<button
 				type="button"
+				onClick={() => setShowModal(true)}
 				style={{
 					position: "fixed",
 					bottom: "2rem",
@@ -166,6 +169,8 @@ export default function HomePage() {
 			>
 				+
 			</button>
+
+			{showModal && <AddLpModal onClose={() => setShowModal(false)} />}
 		</div>
 	);
 }

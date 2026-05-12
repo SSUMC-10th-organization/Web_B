@@ -6,6 +6,7 @@ import MainLayout from "./layout/MainLayout";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import LpDetailPage from "./pages/LpDetailPage";
+import MyPage from "./pages/MyPage";
 import SignupPage from "./pages/SignupPage";
 
 const queryClient = new QueryClient({
@@ -29,6 +30,7 @@ const App = () => {
 					<Route element={<MainLayout />}>
 						<Route element={<ProtectedRoute />}>
 							<Route path="/" element={<HomePage />} />
+							<Route path="/my" element={<MyPage />} />
 						</Route>
 						<Route path="/lp/:lpId" element={<LpDetailPage />} />
 					</Route>

@@ -1,3 +1,4 @@
+import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { postSignin } from "../apis/auth";
@@ -8,21 +9,23 @@ export default function LoginPage() {
 	const location = useLocation();
 	const from =
 		(location.state as { from?: { pathname: string } })?.from?.pathname ?? "/";
+
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
 
-	const handleSubmit = async () => {
-		try {
-			const data = await postSignin(email, password);
+	const { mutate: signin, isPending } = useMutation({
+		mutationFn: () => postSignin(email, password),
+		onSuccess: (data) => {
 			tokenStorage.setAccessToken(data.accessToken);
 			tokenStorage.setRefreshToken(data.refreshToken);
 			localStorage.setItem("nickname", data.name);
 			navigate(from, { replace: true });
-		} catch {
+		},
+		onError: () => {
 			setError("이메일 또는 비밀번호를 확인해주세요.");
-		}
-	};
+		},
+	});
 
 	const inputStyle = {
 		width: "100%",
@@ -73,6 +76,9 @@ export default function LoginPage() {
 					placeholder="비밀번호"
 					value={password}
 					onChange={(e) => setPassword(e.target.value)}
+					onKeyDown={(e) => {
+						if (e.key === "Enter") signin();
+					}}
 					style={inputStyle}
 				/>
 
@@ -80,7 +86,8 @@ export default function LoginPage() {
 
 				<button
 					type="button"
-					onClick={handleSubmit}
+					onClick={() => signin()}
+					disabled={isPending}
 					style={{
 						padding: "0.75rem",
 						borderRadius: "6px",
@@ -88,10 +95,11 @@ export default function LoginPage() {
 						background: "#ec4899",
 						color: "#fff",
 						fontWeight: "bold",
-						cursor: "pointer",
+						cursor: isPending ? "not-allowed" : "pointer",
+						opacity: isPending ? 0.7 : 1,
 					}}
 				>
-					로그인
+					{isPending ? "로그인 중..." : "로그인"}
 				</button>
 
 				<button

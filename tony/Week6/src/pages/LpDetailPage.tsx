@@ -1,5 +1,6 @@
 import {
 	useInfiniteQuery,
+	useMutation,
 	useQuery,
 	useQueryClient,
 } from "@tanstack/react-query";
@@ -19,7 +20,9 @@ import {
 	getLpDetail,
 	postComment,
 	postLike,
+	updateComment,
 	updateLp,
+	uploadImage,
 } from "../apis/lp";
 import { getMyProfile } from "../apis/user";
 import SkeletonComment from "../components/SkeletonComment";
@@ -85,19 +88,20 @@ export default function LpDetailPage() {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const commentOrder = (searchParams.get("order") as "asc" | "desc") ?? "desc";
 	const [commentText, setCommentText] = useState("");
-	const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+	const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+	const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+	const [editingText, setEditingText] = useState("");
 	const sentinelRef = useRef<HTMLDivElement>(null);
+	const editFileInputRef = useRef<HTMLInputElement>(null);
 
 	const [isLiked, setIsLiked] = useState(false);
 	const [likeCount, setLikeCount] = useState(0);
-	const [isLiking, setIsLiking] = useState(false);
 
 	const [showEditModal, setShowEditModal] = useState(false);
 	const [editTitle, setEditTitle] = useState("");
-	const [editContent, setEditContent] = useState("");
 	const [editThumbnail, setEditThumbnail] = useState("");
-	const [editYear, setEditYear] = useState<number>(0);
-	const [isUpdating, setIsUpdating] = useState(false);
+	const [editPreviewUrl, setEditPreviewUrl] = useState<string | null>(null);
+	const [isEditUploading, setIsEditUploading] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
 
 	const id = Number(lpId);
@@ -130,8 +134,11 @@ export default function LpDetailPage() {
 	});
 
 	useEffect(() => {
-		if (lp) setLikeCount(lp.likeCount);
-	}, [lp]);
+		if (lp) {
+			setLikeCount(lp.likes?.length ?? 0);
+			setIsLiked(lp.likes?.some((l) => l.userId === me?.id) ?? false);
+		}
+	}, [lp, me]);
 
 	const {
 		data: commentsData,
@@ -167,68 +174,82 @@ export default function LpDetailPage() {
 
 	const isAuthor = !!me && !!lp && me.id === lp.author.id;
 
-	const handleLikeToggle = async () => {
-		if (isLiking) return;
-		setIsLiking(true);
-		try {
-			if (isLiked) {
-				await deleteLike(id);
-				setIsLiked(false);
-				setLikeCount((c) => c - 1);
-			} else {
-				await postLike(id);
-				setIsLiked(true);
-				setLikeCount((c) => c + 1);
-			}
-		} finally {
-			setIsLiking(false);
-		}
-	};
-
-	const handleCommentSubmit = async () => {
-		if (!commentText.trim() || isSubmittingComment) return;
-		setIsSubmittingComment(true);
-		try {
-			await postComment(id, commentText.trim());
+	const { mutate: submitComment, isPending: isSubmitting } = useMutation({
+		mutationFn: (text: string) => postComment(id, text),
+		onSuccess: () => {
 			setCommentText("");
 			queryClient.invalidateQueries({ queryKey: ["lpComments", id] });
-		} finally {
-			setIsSubmittingComment(false);
-		}
-	};
+		},
+	});
 
-	const handleCommentDelete = async (commentId: number) => {
-		if (!confirm("댓글을 삭제하시겠습니까?")) return;
-		try {
-			await deleteComment(id, commentId);
+	const { mutate: removeComment } = useMutation({
+		mutationFn: (commentId: number) => deleteComment(id, commentId),
+		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["lpComments", id] });
-		} catch {
-			alert("댓글 삭제에 실패했습니다.");
-		}
-	};
+		},
+	});
+
+	const { mutate: editComment } = useMutation({
+		mutationFn: ({ commentId, content }: { commentId: number; content: string }) =>
+			updateComment(id, commentId, content),
+		onSuccess: () => {
+			setEditingCommentId(null);
+			queryClient.invalidateQueries({ queryKey: ["lpComments", id] });
+		},
+	});
+
+	const { mutate: toggleLike, isPending: isLiking } = useMutation({
+		// 현재 liked 상태를 인자로 받아 클로저 의존 제거
+		mutationFn: (currentlyLiked: boolean) =>
+			currentlyLiked ? deleteLike(id) : postLike(id),
+		onMutate: (currentlyLiked) => {
+			const prevCount = likeCount ?? 0;
+			setIsLiked(!currentlyLiked);
+			setLikeCount(currentlyLiked ? prevCount - 1 : prevCount + 1);
+			return { wasLiked: currentlyLiked, prevCount };
+		},
+		onError: (_, __, context) => {
+			if (context) {
+				setIsLiked(context.wasLiked);
+				setLikeCount(context.prevCount);
+			}
+		},
+		onSuccess: () => {
+			// 서버 진짜 값으로 동기화
+			queryClient.invalidateQueries({ queryKey: ["lp", id] });
+		},
+	});
+
+	const { mutate: saveEdit, isPending: isUpdating } = useMutation({
+		mutationFn: (body: { title?: string; thumbnail?: string }) =>
+			updateLp(id, body),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["lp", id] });
+			setShowEditModal(false);
+			setEditPreviewUrl(null);
+		},
+	});
 
 	const handleEditOpen = () => {
 		if (!lp) return;
 		setEditTitle(lp.title);
-		setEditContent(lp.content);
-		setEditThumbnail(lp.thumbnail);
-		setEditYear(lp.publishedYear);
+		setEditThumbnail(lp.thumbnail ?? "");
+		setEditPreviewUrl(null);
 		setShowEditModal(true);
 	};
 
-	const handleEditSubmit = async () => {
-		setIsUpdating(true);
+	const handleEditImageChange = async (
+		e: React.ChangeEvent<HTMLInputElement>,
+	) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+		setEditPreviewUrl(URL.createObjectURL(file));
+		setIsEditUploading(true);
 		try {
-			await updateLp(id, {
-				title: editTitle,
-				content: editContent,
-				thumbnail: editThumbnail,
-				publishedYear: editYear,
-			});
-			await queryClient.invalidateQueries({ queryKey: ["lp", id] });
-			setShowEditModal(false);
+			const imageUrl = await uploadImage(file);
+			setEditThumbnail(imageUrl);
 		} finally {
-			setIsUpdating(false);
+			setIsEditUploading(false);
 		}
 	};
 
@@ -291,99 +312,123 @@ export default function LpDetailPage() {
 				>
 					<div
 						style={{
-							background: "#fff",
-							borderRadius: "12px",
+							background: "#1c1c1e",
+							borderRadius: "16px",
 							padding: "2rem",
 							width: "90%",
-							maxWidth: "480px",
+							maxWidth: "380px",
 							display: "flex",
 							flexDirection: "column",
-							gap: "0.75rem",
+							gap: "1rem",
+							position: "relative",
 						}}
 					>
-						<h2 style={{ fontSize: "1.1rem", fontWeight: "bold" }}>LP 수정</h2>
+						{/* 닫기 */}
+						<button
+							type="button"
+							onClick={() => setShowEditModal(false)}
+							style={{
+								position: "absolute",
+								top: "1rem",
+								right: "1rem",
+								background: "none",
+								border: "none",
+								color: "#fff",
+								fontSize: "1.2rem",
+								cursor: "pointer",
+							}}
+						>
+							✕
+						</button>
+
+						{/* 이미지 (클릭 시 파일 선택) */}
+						<div
+							style={{
+								display: "flex",
+								justifyContent: "center",
+								cursor: isEditUploading ? "wait" : "pointer",
+							}}
+							onClick={() =>
+								!isEditUploading && editFileInputRef.current?.click()
+							}
+						>
+							<div style={{ position: "relative", width: "200px", height: "200px" }}>
+								<img
+									src={editPreviewUrl ?? editThumbnail ?? ""}
+									alt="thumbnail"
+									style={{
+										width: "200px",
+										height: "200px",
+										borderRadius: "50%",
+										objectFit: "cover",
+										opacity: isEditUploading ? 0.5 : 1,
+										background: "#3a3a3c",
+									}}
+								/>
+								{isEditUploading && (
+									<div
+										style={{
+											position: "absolute",
+											inset: 0,
+											display: "flex",
+											alignItems: "center",
+											justifyContent: "center",
+											color: "#fff",
+											fontSize: "0.85rem",
+										}}
+									>
+										업로드 중...
+									</div>
+								)}
+							</div>
+							<input
+								ref={editFileInputRef}
+								type="file"
+								accept="image/*"
+								style={{ display: "none" }}
+								onChange={handleEditImageChange}
+							/>
+						</div>
+
+						{/* 제목 */}
 						<input
 							value={editTitle}
 							onChange={(e) => setEditTitle(e.target.value)}
 							placeholder="제목"
 							style={{
-								padding: "0.6rem 1rem",
-								borderRadius: "6px",
-								border: "1px solid #d1d5db",
-								fontSize: "0.9rem",
+								padding: "0.75rem 1rem",
+								borderRadius: "8px",
+								border: "1px solid #3a3a3c",
+								background: "#2c2c2e",
+								color: "#fff",
+								fontSize: "0.95rem",
+								outline: "none",
 							}}
 						/>
-						<textarea
-							value={editContent}
-							onChange={(e) => setEditContent(e.target.value)}
-							placeholder="내용"
-							rows={4}
+
+						{/* 저장 버튼 */}
+						<button
+							type="button"
+							onClick={() =>
+								saveEdit({
+									title: editTitle,
+									thumbnail: editThumbnail || undefined,
+								})
+							}
+							disabled={isUpdating || isEditUploading}
 							style={{
-								padding: "0.6rem 1rem",
-								borderRadius: "6px",
-								border: "1px solid #d1d5db",
-								fontSize: "0.9rem",
-								resize: "vertical",
-							}}
-						/>
-						<input
-							value={editThumbnail}
-							onChange={(e) => setEditThumbnail(e.target.value)}
-							placeholder="썸네일 URL"
-							style={{
-								padding: "0.6rem 1rem",
-								borderRadius: "6px",
-								border: "1px solid #d1d5db",
-								fontSize: "0.9rem",
-							}}
-						/>
-						<input
-							type="number"
-							value={editYear}
-							onChange={(e) => setEditYear(Number(e.target.value))}
-							placeholder="발매년도"
-							style={{
-								padding: "0.6rem 1rem",
-								borderRadius: "6px",
-								border: "1px solid #d1d5db",
-								fontSize: "0.9rem",
-							}}
-						/>
-						<div
-							style={{
-								display: "flex",
-								gap: "0.5rem",
-								justifyContent: "flex-end",
+								padding: "0.8rem",
+								borderRadius: "8px",
+								border: "none",
+								background: "#ec4899",
+								color: "#fff",
+								fontWeight: "bold",
+								cursor: isUpdating || isEditUploading ? "not-allowed" : "pointer",
+								opacity: isUpdating || isEditUploading ? 0.7 : 1,
 							}}
 						>
-							<button
-								type="button"
-								onClick={() => setShowEditModal(false)}
-								style={{
-									padding: "0.5rem 1.25rem",
-									borderRadius: "6px",
-									border: "1px solid #d1d5db",
-									cursor: "pointer",
-								}}
-							>
-								취소
-							</button>
-							<button
-								type="button"
-								onClick={handleEditSubmit}
-								disabled={isUpdating}
-								style={{
-									padding: "0.5rem 1.25rem",
-									borderRadius: "6px",
-									border: "none",
-									background: "#ec4899",
-									color: "#fff",
-									cursor: "pointer",
-								}}
-							>
-								{isUpdating ? "저장 중..." : "저장"}
-							</button>
-						</div>
+							{isUpdating ? "저장 중..." : "저장"}
+						</button>
 					</div>
 				</div>
 			)}
@@ -517,7 +562,7 @@ export default function LpDetailPage() {
 			<div style={{ marginBottom: "2rem" }}>
 				<button
 					type="button"
-					onClick={handleLikeToggle}
+					onClick={() => toggleLike(isLiked)}
 					disabled={isLiking}
 					style={{
 						display: "flex",
@@ -567,7 +612,8 @@ export default function LpDetailPage() {
 					value={commentText}
 					onChange={(e) => setCommentText(e.target.value)}
 					onKeyDown={(e) => {
-						if (e.key === "Enter") handleCommentSubmit();
+						if (e.key === "Enter" && commentText.trim())
+							submitComment(commentText.trim());
 					}}
 					placeholder="댓글을 입력해주세요..."
 					style={{
@@ -580,8 +626,10 @@ export default function LpDetailPage() {
 				/>
 				<button
 					type="button"
-					onClick={handleCommentSubmit}
-					disabled={!commentText.trim() || isSubmittingComment}
+					onClick={() => {
+						if (commentText.trim()) submitComment(commentText.trim());
+					}}
+					disabled={!commentText.trim() || isSubmitting}
 					style={{
 						padding: "0.6rem 1.25rem",
 						borderRadius: "6px",
@@ -591,7 +639,7 @@ export default function LpDetailPage() {
 						cursor: commentText.trim() ? "pointer" : "not-allowed",
 					}}
 				>
-					{isSubmittingComment ? "등록 중..." : "등록"}
+					{isSubmitting ? "등록 중..." : "작성"}
 				</button>
 			</div>
 
@@ -605,61 +653,189 @@ export default function LpDetailPage() {
 			{/* 댓글 목록 */}
 			{commentsData?.pages
 				.flatMap((page) => page.data)
-				.map((comment) => (
-					<div
-						key={comment.id}
-						style={{ padding: "1rem 0", borderBottom: "1px solid #f3f4f6" }}
-					>
+				.map((comment) => {
+					const isOwn = me?.id === comment.author.id;
+					const isEditing = editingCommentId === comment.id;
+					const isMenuOpen = openMenuId === comment.id;
+
+					return (
 						<div
+							key={comment.id}
 							style={{
-								display: "flex",
-								alignItems: "flex-start",
-								justifyContent: "space-between",
+								padding: "1rem 0",
+								borderBottom: "1px solid #f3f4f6",
+								position: "relative",
 							}}
 						>
+							{/* 헤더: 아바타 + 이름 + 날짜 + ... 메뉴 */}
 							<div
 								style={{
 									display: "flex",
 									alignItems: "center",
-									gap: "0.5rem",
+									justifyContent: "space-between",
 									marginBottom: "0.4rem",
 								}}
 							>
-								<AvatarCircle name={comment.author.name} size={28} />
-								<span style={{ fontWeight: "bold", fontSize: "0.88rem" }}>
-									{comment.author.name}
-								</span>
-								<span style={{ color: "#9ca3af", fontSize: "0.8rem" }}>
-									{comment.createdAt?.slice(0, 10)}
-								</span>
-							</div>
-							{me?.id === comment.author.id && (
-								<button
-									type="button"
-									onClick={() => handleCommentDelete(comment.id)}
+								<div
 									style={{
-										background: "none",
-										border: "none",
-										color: "#9ca3af",
-										cursor: "pointer",
-										fontSize: "0.8rem",
+										display: "flex",
+										alignItems: "center",
+										gap: "0.5rem",
 									}}
 								>
-									삭제
-								</button>
+									<AvatarCircle name={comment.author.name} size={28} />
+									<span style={{ fontWeight: "bold", fontSize: "0.88rem" }}>
+										{comment.author.name}
+									</span>
+									<span style={{ color: "#9ca3af", fontSize: "0.8rem" }}>
+										{comment.createdAt?.slice(0, 10)}
+									</span>
+								</div>
+								{isOwn && (
+									<div style={{ position: "relative" }}>
+										<button
+											type="button"
+											onClick={() =>
+												setOpenMenuId(isMenuOpen ? null : comment.id)
+											}
+											style={{
+												background: "none",
+												border: "none",
+												cursor: "pointer",
+												color: "#9ca3af",
+												fontSize: "1.1rem",
+												padding: "0.2rem 0.4rem",
+												lineHeight: 1,
+											}}
+										>
+											···
+										</button>
+										{isMenuOpen && (
+											<div
+												style={{
+													position: "absolute",
+													right: 0,
+													top: "100%",
+													background: "#fff",
+													border: "1px solid #e5e7eb",
+													borderRadius: "8px",
+													boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+													zIndex: 10,
+													minWidth: "80px",
+													overflow: "hidden",
+												}}
+											>
+												<button
+													type="button"
+													onClick={() => {
+														setEditingCommentId(comment.id);
+														setEditingText(comment.content);
+														setOpenMenuId(null);
+													}}
+													style={{
+														display: "block",
+														width: "100%",
+														padding: "0.5rem 1rem",
+														background: "none",
+														border: "none",
+														cursor: "pointer",
+														textAlign: "left",
+														fontSize: "0.88rem",
+														color: "#111",
+													}}
+												>
+													수정
+												</button>
+												<button
+													type="button"
+													onClick={() => {
+														removeComment(comment.id);
+														setOpenMenuId(null);
+													}}
+													style={{
+														display: "block",
+														width: "100%",
+														padding: "0.5rem 1rem",
+														background: "none",
+														border: "none",
+														cursor: "pointer",
+														textAlign: "left",
+														fontSize: "0.88rem",
+														color: "#ef4444",
+													}}
+												>
+													삭제
+												</button>
+											</div>
+										)}
+									</div>
+								)}
+							</div>
+
+							{/* 댓글 내용 or 인라인 수정 */}
+							{isEditing ? (
+								<div
+									style={{
+										display: "flex",
+										gap: "0.5rem",
+										paddingLeft: "2.25rem",
+									}}
+								>
+									<input
+										// biome-ignore lint/a11y/noAutofocus: 수정 모드 진입 시 포커스
+										autoFocus
+										value={editingText}
+										onChange={(e) => setEditingText(e.target.value)}
+										onKeyDown={(e) => {
+											if (e.key === "Enter" && editingText.trim())
+												editComment({
+													commentId: comment.id,
+													content: editingText.trim(),
+												});
+											if (e.key === "Escape") setEditingCommentId(null);
+										}}
+										style={{
+											flex: 1,
+											padding: "0.4rem 0.75rem",
+											borderRadius: "6px",
+											border: "1px solid #d1d5db",
+											fontSize: "0.9rem",
+										}}
+									/>
+									<button
+										type="button"
+										onClick={() =>
+											editComment({
+												commentId: comment.id,
+												content: editingText.trim(),
+											})
+										}
+										style={{
+											background: "none",
+											border: "none",
+											cursor: "pointer",
+											color: "#ec4899",
+											fontSize: "1.2rem",
+											padding: "0 0.25rem",
+										}}
+									>
+										✓
+									</button>
+								</div>
+							) : (
+								<div
+									style={{
+										color: "#374151",
+										fontSize: "0.9rem",
+										paddingLeft: "2.25rem",
+									}}
+								>
+									{comment.content}
+								</div>
 							)}
 						</div>
-						<div
-							style={{
-								color: "#374151",
-								fontSize: "0.9rem",
-								paddingLeft: "2.25rem",
-							}}
-						>
-							{comment.content}
-						</div>
-					</div>
-				))}
+					);
+				})}
 
 			{/* 추가 로딩 스켈레톤 */}
 			{isFetchingNextPage &&

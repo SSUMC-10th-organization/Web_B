@@ -74,7 +74,7 @@ export default function LpCard({ lp }: LpCardProps) {
 					{lp.createdAt?.slice(0, 10)}
 				</div>
 				<div style={{ fontSize: "0.78rem", color: "#f9a8d4" }}>
-					❤️ {lp.likeCount}
+					❤️ {lp.likes?.length ?? 0}
 				</div>
 			</div>
 
