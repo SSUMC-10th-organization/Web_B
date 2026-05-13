@@ -44,3 +44,13 @@ export const deleteLp = async (lpId: number): Promise<ResponseDeleteLpDto> => {
   const { data } = await axiosInstance.delete(`/v1/lps/${lpId}`);
   return data;
 };
+
+export const likeLp = async (lpId: number) => {
+  const { data } = await axiosInstance.post(`/v1/lps/${lpId}/likes`);
+  return data;
+};
+
+export const unlikeLp = async (lpId: number) => {
+  const { data } = await axiosInstance.delete(`/v1/lps/${lpId}/likes`);
+  return data;
+};

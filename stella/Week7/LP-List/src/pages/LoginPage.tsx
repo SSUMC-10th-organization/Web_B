@@ -2,20 +2,12 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import useForm from "../hooks/useForm";
 import { type UserSigninformation, validateSignin } from "../utils/validate";
-import { useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 
 export const LoginPage = () => {
-  const { login, accessToken } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-
-  useEffect(() => {
-    if (accessToken) {
-      const redirect = searchParams.get("redirect");
-      navigate(redirect ?? "/", { replace: true });
-    }
-  }, [navigate, accessToken, searchParams]);
 
   const { values, errors, touched, getInputProps } =
     useForm<UserSigninformation>({
@@ -31,7 +23,6 @@ export const LoginPage = () => {
     },
     onError: (error) => {
       console.error("로그인 실패:", error);
-      alert("로그인에 실패했습니다.");
     },
   });
 
@@ -55,8 +46,8 @@ export const LoginPage = () => {
         {...getInputProps("email")}
         className={`border border-[#ccc] w-[300px] p-[10px] focus:border-[#807bff] rounded-sm 
         ${errors?.email && touched?.email ? "border-red-500 bg-red-200" : "border-gray-300"}`}
-        type={"email"}
-        placeholder={"이메일"}
+        type="email"
+        placeholder="이메일"
       />
       {errors?.email && touched?.email && (
         <div className="text-red-500 text-sm">{errors.email}</div>
@@ -65,8 +56,8 @@ export const LoginPage = () => {
         {...getInputProps("password")}
         className={`border border-[#ccc] w-[300px] p-[10px] focus:border-[#807bff] rounded-sm 
         ${errors?.password && touched?.password ? "border-red-500 bg-red-200" : "border-gray-300"}`}
-        type={"password"}
-        placeholder={"비밀번호"}
+        type="password"
+        placeholder="비밀번호"
       />
       {errors?.password && touched?.password && (
         <div className="text-red-500 text-sm">{errors.password}</div>
@@ -82,11 +73,11 @@ export const LoginPage = () => {
       <button
         type="button"
         onClick={handleGoogleLogin}
-        className="w-[300px] p-[10px] bg-black text-white py-3 rounded-md text-lg font-medium hover:bg-black transition-colors cursor-pointer disabled:bg-gray-300"
+        className="w-[300px] p-[10px] bg-black text-white py-3 rounded-md text-lg font-medium hover:bg-black transition-colors cursor-pointer"
       >
         <div className="flex items-center justify-center gap-4">
           <img
-            src={"/images/google-color.svg"}
+            src="/images/google-color.svg"
             alt="Google Logo Image"
             className="w-8 h-8"
           />

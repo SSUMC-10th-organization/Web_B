@@ -2,7 +2,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-// APIs & Hooks
 import { getMyInfo } from "../apis/auth";
 import { uploadImagePublic } from "../apis/upload";
 import useGetLpDetail from "../hooks/queries/useGetLpDetail";
@@ -10,10 +9,9 @@ import useGetComments from "../hooks/queries/useGetComments";
 import useCreateComment from "../hooks/useCreateComment";
 import useUpdateComment from "../hooks/useUpdateComment";
 import useDeleteComment from "../hooks/useDeleteComment";
+import useLikeLp from "../hooks/useLikeLp";
 import { useUpdateLp } from "../hooks/useUpdateLp";
 import { useDeleteLp } from "../hooks/useDeleteLp";
-
-// Context & Enums
 import { useAuth } from "../context/AuthContext";
 import { PAGINATION_ORDER } from "../enums/common";
 
@@ -34,7 +32,6 @@ export const LpDetailPage = () => {
   const navigate = useNavigate();
   const { accessToken } = useAuth();
 
-  // --- UI 및 댓글 관련 상태 ---
   const [commentOrder, setCommentOrder] = useState<PAGINATION_ORDER>(
     PAGINATION_ORDER.desc,
   );
@@ -44,7 +41,6 @@ export const LpDetailPage = () => {
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // --- LP 수정 모드 관련 상태 ---
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     title: "",
@@ -53,7 +49,6 @@ export const LpDetailPage = () => {
     tags: "",
   });
 
-  // --- Queries ---
   const {
     data: lpDetail,
     isPending,
@@ -75,7 +70,10 @@ export const LpDetailPage = () => {
     hasNextPage,
   } = useGetComments(numLpId, { order: commentOrder });
 
-  // --- Mutations ---
+  const myId = myInfo?.data?.id;
+  const isAuthor = myId === lpDetail?.authorId;
+  const isLiked = lpDetail?.likes.some((like) => like.userId === myId);
+
   const { mutate: updateLp, isPending: isUpdatingLp } = useUpdateLp(numLpId);
   const { mutate: deleteLp } = useDeleteLp(numLpId);
   const { mutate: createComment, isPending: isCreating } =
@@ -83,34 +81,39 @@ export const LpDetailPage = () => {
   const { mutate: updateComment, isPending: isUpdating } =
     useUpdateComment(numLpId);
   const { mutate: deleteComment } = useDeleteComment(numLpId);
+  const { mutate: toggleLike } = useLikeLp(numLpId, myId);
 
-  // --- Effects ---
+  // 문제 1 수정 — accessToken이 undefined(초기화 중)일 때는 실행하지 않음
   useEffect(() => {
-    if (!accessToken) {
+    if (accessToken === null) {
       const confirmed = window.confirm("로그인이 필요한 서비스입니다.");
-      if (confirmed) navigate(`/login?redirect=/lp/${lpId}`);
-      else navigate(-1);
+      if (confirmed) {
+        navigate(`/login?redirect=/lp/${lpId}`);
+      } else {
+        navigate("/", { replace: true });
+      }
     }
   }, [accessToken, lpId, navigate]);
 
   useEffect(() => {
-    if (lpDetail && isEditing) {
-      setEditForm({
-        title: lpDetail.title,
-        content: lpDetail.content,
-        thumbnail: lpDetail.thumbnail,
-        tags: lpDetail.tags.map((t) => t.name).join(", "),
-      });
-    }
-  }, [lpDetail, isEditing]);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    if (bottomRef.current) observer.observe(bottomRef.current);
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  // --- Handlers (LP) ---
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
       try {
         const imageUrl = await uploadImagePublic(e.target.files[0]);
         setEditForm((prev) => ({ ...prev, thumbnail: imageUrl }));
-      } catch (error) {
+      } catch {
         alert("이미지 업로드에 실패했습니다.");
       }
     }
@@ -118,7 +121,6 @@ export const LpDetailPage = () => {
 
   const handleUpdateLpSubmit = () => {
     if (!editForm.title.trim() || !editForm.content.trim()) return;
-
     updateLp(
       {
         title: editForm.title,
@@ -130,13 +132,10 @@ export const LpDetailPage = () => {
           .filter(Boolean),
         published: true,
       },
-      {
-        onSuccess: () => setIsEditing(false),
-      },
+      { onSuccess: () => setIsEditing(false) },
     );
   };
 
-  // --- Handlers (Comments) ---
   const handleCreateComment = () => {
     if (!commentInput.trim()) return;
     createComment(commentInput, { onSuccess: () => setCommentInput("") });
@@ -155,16 +154,38 @@ export const LpDetailPage = () => {
     );
   };
 
-  if (isPending || !lpDetail)
-    return <div className="p-6 w-full max-w-3xl mx-auto">로딩 중...</div>;
+  if (isPending) {
+    return (
+      <div className="p-6 w-full max-w-3xl mx-auto">
+        <div className="w-full aspect-square bg-gray-200 animate-pulse rounded-md mb-6" />
+        <div className="h-7 bg-gray-200 animate-pulse rounded w-1/2 mb-3" />
+        <div className="h-4 bg-gray-200 animate-pulse rounded w-1/4 mb-6" />
+        <div className="flex flex-col gap-2">
+          <div className="h-4 bg-gray-200 animate-pulse rounded w-full" />
+          <div className="h-4 bg-gray-200 animate-pulse rounded w-full" />
+          <div className="h-4 bg-gray-200 animate-pulse rounded w-3/4" />
+        </div>
+      </div>
+    );
+  }
 
-  const myId = myInfo?.data?.id;
-  const isAuthor = myId === lpDetail.authorId;
+  if (isError || !lpDetail) {
+    return (
+      <div className="flex flex-col items-center justify-center mt-20 gap-4">
+        <p className="text-gray-500">데이터를 불러오는데 실패했습니다.</p>
+        <button
+          onClick={() => refetch()}
+          className="px-4 py-2 text-sm bg-black text-white rounded-md hover:bg-[#333] transition-colors"
+        >
+          다시 시도
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 w-full max-w-3xl mx-auto">
       {isEditing ? (
-        /* --- 수정 모드 UI --- */
         <div className="flex flex-col gap-6">
           <div className="relative aspect-square bg-gray-100 rounded-md overflow-hidden group">
             <img
@@ -227,14 +248,19 @@ export const LpDetailPage = () => {
           </div>
         </div>
       ) : (
-        /* --- 조회 모드 UI --- */
         <>
           <div className="w-full aspect-square bg-gray-100 rounded-md overflow-hidden mb-6">
-            <img
-              src={lpDetail.thumbnail}
-              alt={lpDetail.title}
-              className="w-full h-full object-cover"
-            />
+            {lpDetail.thumbnail ? (
+              <img
+                src={lpDetail.thumbnail}
+                alt={lpDetail.title}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-gray-400">
+                No Image
+              </div>
+            )}
           </div>
 
           <div className="flex items-start justify-between gap-4 mb-2">
@@ -242,7 +268,15 @@ export const LpDetailPage = () => {
             {isAuthor && (
               <div className="flex gap-2 shrink-0">
                 <button
-                  onClick={() => setIsEditing(true)}
+                  onClick={() => {
+                    setEditForm({
+                      title: lpDetail.title,
+                      content: lpDetail.content,
+                      thumbnail: lpDetail.thumbnail,
+                      tags: lpDetail.tags.map((t) => t.name).join(", "),
+                    });
+                    setIsEditing(true);
+                  }}
                   className="px-3 py-1.5 text-sm border border-[#444] rounded-md hover:bg-gray-100 transition-colors"
                 >
                   수정
@@ -267,6 +301,20 @@ export const LpDetailPage = () => {
             </span>
           </div>
 
+          <div className="flex items-center gap-2 mb-6">
+            <button
+              onClick={() => toggleLike(isLiked)}
+              className={`flex items-center gap-1.5 px-4 py-1.5 text-sm border rounded-full transition-colors ${
+                isLiked
+                  ? "border-red-400 text-red-400 hover:bg-red-50"
+                  : "border-[#444] hover:bg-gray-100"
+              }`}
+            >
+              <span>{isLiked ? "♥" : "♡"}</span>
+              <span>{lpDetail.likes.length}</span>
+            </button>
+          </div>
+
           {lpDetail.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-6">
               {lpDetail.tags.map((tag) => (
@@ -286,30 +334,33 @@ export const LpDetailPage = () => {
 
           {/* 댓글 섹션 */}
           <div className="border-t border-gray-200 pt-6">
-            {/* 댓글 입력 UI... (기존 코드와 동일) */}
             <div className="mb-6">
               <textarea
                 value={commentInput}
                 onChange={(e) => setCommentInput(e.target.value)}
                 placeholder="댓글을 입력해주세요."
-                className="w-full border border-gray-300 rounded-md p-3 text-sm resize-none focus:outline-none focus:border-black"
+                className="w-full border border-gray-300 rounded-md p-3 text-sm resize-none focus:outline-none focus:border-black transition-colors"
                 rows={3}
               />
+              {commentInput.length > 0 && commentInput.trim().length === 0 && (
+                <p className="text-red-400 text-xs mt-1">
+                  공백만 입력할 수 없습니다.
+                </p>
+              )}
               <div className="flex justify-end mt-2">
                 <button
                   onClick={handleCreateComment}
                   disabled={!commentInput.trim() || isCreating}
-                  className="px-4 py-2 text-sm bg-black text-white rounded-md disabled:bg-gray-300"
+                  className="px-4 py-2 text-sm bg-black text-white rounded-md hover:bg-[#333] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   {isCreating ? "작성 중..." : "댓글 작성"}
                 </button>
               </div>
             </div>
 
-            {/* 댓글 목록 렌더링... (기존 리스트 로직) */}
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm text-gray-500">
-                댓글 {comments?.pages[0]?.data.length ?? 0}개
+                댓글 {comments?.pages.length ?? 0}개
               </span>
               <button
                 onClick={() =>
@@ -319,26 +370,38 @@ export const LpDetailPage = () => {
                       : PAGINATION_ORDER.desc,
                   )
                 }
-                className="px-3 py-1 text-xs border border-[#444] rounded-md"
+                className="px-3 py-1 text-xs border border-[#444] rounded-md hover:bg-gray-100 transition-colors"
               >
                 {commentOrder === PAGINATION_ORDER.desc ? "최신순" : "오래된순"}
               </button>
             </div>
 
-            <div className="flex flex-col">
-              {comments?.pages.map((page) =>
-                page.data.map((comment: any) => (
+            {/* 문제 2 수정 — select로 이미 flatMap된 pages 배열 직접 사용 */}
+            {isCommentsLoading ? (
+              <div className="flex flex-col">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <CommentSkeleton key={i} />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col">
+                {comments?.pages.map((comment) => (
                   <div
                     key={comment.id}
                     className="flex flex-col gap-1 py-4 border-b border-gray-100"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-xs">
+                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-xs text-gray-500">
                           {comment.author.name[0]}
                         </div>
                         <span className="text-sm font-medium">
                           {comment.author.name}
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          {new Date(comment.createdAt).toLocaleDateString(
+                            "ko-KR",
+                          )}
                         </span>
                       </div>
                       {myId === comment.authorId && (
@@ -349,25 +412,28 @@ export const LpDetailPage = () => {
                                 openMenuId === comment.id ? null : comment.id,
                               )
                             }
-                            className="px-2 text-gray-400"
+                            className="px-2 text-gray-400 hover:text-black transition-colors"
                           >
                             • • •
                           </button>
                           {openMenuId === comment.id && (
-                            <div className="absolute right-0 top-6 bg-white border rounded-md shadow-lg z-10 w-20">
+                            <div className="absolute right-0 top-6 bg-white border border-gray-200 rounded-md shadow-md z-10 w-20">
                               <button
                                 onClick={() => {
                                   setEditingCommentId(comment.id);
                                   setEditingContent(comment.content);
                                   setOpenMenuId(null);
                                 }}
-                                className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50"
+                                className="w-full text-left px-3 py-2 text-xs hover:bg-gray-100 transition-colors"
                               >
                                 수정
                               </button>
                               <button
-                                onClick={() => deleteComment(comment.id)}
-                                className="w-full text-left px-3 py-2 text-xs text-red-500 hover:bg-red-50"
+                                onClick={() => {
+                                  deleteComment(comment.id);
+                                  setOpenMenuId(null);
+                                }}
+                                className="w-full text-left px-3 py-2 text-xs text-red-400 hover:bg-red-50 transition-colors"
                               >
                                 삭제
                               </button>
@@ -376,18 +442,29 @@ export const LpDetailPage = () => {
                         </div>
                       )}
                     </div>
+
                     {editingCommentId === comment.id ? (
-                      <div className="flex gap-2 mt-2 pl-10">
+                      <div className="flex gap-2 mt-1 pl-10">
                         <input
                           value={editingContent}
                           onChange={(e) => setEditingContent(e.target.value)}
-                          className="flex-1 border rounded px-2 py-1 text-sm"
+                          className="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-black"
                         />
                         <button
                           onClick={() => handleUpdateComment(comment.id)}
-                          className="text-xs bg-black text-white px-2 py-1 rounded"
+                          disabled={isUpdating}
+                          className="px-3 py-1.5 text-xs bg-black text-white rounded-md hover:bg-[#333] transition-colors disabled:bg-gray-300"
                         >
-                          저장
+                          {isUpdating ? "저장 중..." : "저장"}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingCommentId(null);
+                            setEditingContent("");
+                          }}
+                          className="px-3 py-1.5 text-xs border border-gray-300 rounded-md hover:bg-gray-100 transition-colors"
+                        >
+                          취소
                         </button>
                       </div>
                     ) : (
@@ -396,16 +473,23 @@ export const LpDetailPage = () => {
                       </p>
                     )}
                   </div>
-                )),
-              )}
-            </div>
+                ))}
+
+                {isFetchingNextPage &&
+                  Array.from({ length: 2 }).map((_, i) => (
+                    <CommentSkeleton key={`skeleton-${i}`} />
+                  ))}
+              </div>
+            )}
+
+            <div ref={bottomRef} className="h-10" />
           </div>
         </>
       )}
 
       <button
         onClick={() => navigate(-1)}
-        className="mt-6 text-sm text-gray-400 hover:text-black"
+        className="mt-6 text-sm text-gray-400 hover:text-black transition-colors"
       >
         ← 목록으로
       </button>

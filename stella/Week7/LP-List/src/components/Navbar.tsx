@@ -4,6 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { getMyInfo } from "../apis/auth";
 import { useState } from "react";
 import { Sidebar } from "./Sidebar";
+import { queryClient } from "../App";
 
 export const Navbar = () => {
   const { accessToken, logout } = useAuth();
@@ -18,7 +19,11 @@ export const Navbar = () => {
   const logoutMutation = useMutation({
     mutationFn: () => logout(),
     onSuccess: () => {
+      queryClient.removeQueries({ queryKey: ["myInfo"] });
       window.location.href = "/login";
+    },
+    onError: () => {
+      alert("로그아웃에 실패했습니다.");
     },
   });
 

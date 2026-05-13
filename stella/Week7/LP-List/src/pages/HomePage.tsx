@@ -78,7 +78,7 @@ export const HomePage = () => {
   }
 
   return (
-    <div className="p-6 w-full">
+    <div className="p-6 w-full self-start">
       <div className="flex justify-end mb-4">
         <button
           onClick={toggleOrder}

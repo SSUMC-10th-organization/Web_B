@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { deleteAccount } from "../apis/auth";
+import { queryClient } from "../App";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const deleteMutation = useMutation({
     mutationFn: deleteAccount,
     onSuccess: () => {
+      queryClient.clear(); // 모든 캐시 제거
       logout();
       navigate("/login", { replace: true });
     },

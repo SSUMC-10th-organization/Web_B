@@ -10,7 +10,7 @@ export const HomeLayout = () => {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <Navbar />
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col items-center justify-center">
         <Outlet />
       </main>
       <Footer />
