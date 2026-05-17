@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useWithdrawMutation } from "../hooks/mutations/useAuthMutation";
 import { useAuth } from "../context/AuthContext";
 
@@ -26,6 +26,26 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     withdrawMutate();
     setIsWithdrawModalOpen(false);
   };
+
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) onClose();
+    };
+
+    if (isOpen) {
+      window.addEventListener("keydown", handleEsc);
+      document.body.style.overflow = "hidden"; // 스크롤 막기
+    } else {
+      document.body.style.overflow = "unset"; // 스크롤 원상복구
+    }
+
+    return () => {
+      window.removeEventListener("keydown", handleEsc);
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen, onClose]);
+
+
   return (
     <>
       <div

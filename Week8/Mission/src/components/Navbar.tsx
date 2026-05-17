@@ -1,24 +1,20 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { useLogoutMutation } from "../hooks/mutations/useAuthMutation";
+import { useSidebar } from "../hooks/useSidebar";
 
 export const Navbar = () => {
 	const { tokenA, nickname } = useAuth();
-
-	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 	const { mutate: logoutMutate, isPending } = useLogoutMutation();
 
-	const toggleSidebar = () => {
-  		setIsSidebarOpen(!isSidebarOpen);
-	};
+	const { isOpen, toggle, close } = useSidebar();
 
 	return (
 		
 		<nav className="relative z-[60] flex items-center justify-between px-8 py-4 bg-gray-900 text-white shadow-md">
 			<div className="flex items-center gap-8">
-				<button type="button" onClick={toggleSidebar}>
+				<button type="button" onClick={toggle}>
 					<svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"role="img"aria-labelledby="menu-title">
     					<title id="menu-title">전체 메뉴 열기</title><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M7.95 11.95h32m-32 12h32m-32 12h32"/>
 			 		</svg>
@@ -67,8 +63,8 @@ export const Navbar = () => {
 					
 				)}
 				<Sidebar 
-                		isOpen={isSidebarOpen} 
-                		onClose={() => setIsSidebarOpen(false)} 
+                		isOpen={isOpen} 
+                		onClose={close} 
             	/>
 			</div>
 		</nav>
