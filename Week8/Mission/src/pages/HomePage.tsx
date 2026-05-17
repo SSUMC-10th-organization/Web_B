@@ -1,12 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useGetLpList } from "../hooks/queries/useGetLpList";
 import { PAGINATION_ORDER } from "../apis/common";
-import { useInView } from "react-intersection-observer";
 import { CreateLpModal } from "../components/createLpModal";
-import { useLpMutation } from "../hooks/mutations/useLpMutations";
 import { useDebounce } from "../hooks/useDebounce";
+import { useThrottle } from "../hooks/useThrottle";
 
 // 타입 인터페이스 정의 (빨간 줄 제거용)
 interface Lp {
@@ -39,8 +38,8 @@ export const HomePage = () => {
     const [search, setSearch] = useState("");
     const [order, setOrder] = useState<typeof PAGINATION_ORDER[keyof typeof PAGINATION_ORDER]>(PAGINATION_ORDER.DESC);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const debouncedSearch = useDebounce(search, 300);
-    const isEnabled = debouncedSearch === "" || debouncedSearch.trim().length > 0;
+    const debouncedSearch = useDebounce(search, 300); // 300ms마다 검색 요청
+    const isEnabled = debouncedSearch === "" || debouncedSearch.trim().length > 0; // 썼다가 지웠을 때 로딩 안되는 현상 방지
     
     const { 
         data, 
@@ -50,14 +49,28 @@ export const HomePage = () => {
         hasNextPage, 
         isFetchingNextPage,
     } = useGetLpList({ search: debouncedSearch, order: order, limit: 20, enabled:isEnabled });
+    // 검색을 debouncedSearch로 바꾸고 enabled 추가
 
-    const { ref, inView } = useInView();
+    const handleScroll = useCallback(() => {
+        // 현재 스크롤 위치 + 창 높이가 전체 문서 높이와 거의 같으면(여유 100px) 바닥으로 인식
+        const isBottom = 
+            window.innerHeight + document.documentElement.scrollTop >= 
+            document.documentElement.offsetHeight - 100;
 
-    useEffect(() => {
-        if (inView && hasNextPage && !isFetchingNextPage) {
+        if (isBottom && hasNextPage && !isFetchingNextPage) {
+            console.log(Date.now(),`[🚀 스크롤 맨 밑!] 3초 쓰로틀 통과, 데이터 요청`);
             fetchNextPage();
         }
-    }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+    const throttledScroll = useThrottle(handleScroll, 3000);
+
+    // 브라우저 실제 스크롤 이벤트에 연결
+    useEffect(() => {
+        window.addEventListener("scroll", throttledScroll);
+        // 클린업: 컴포넌트가 사라지거나 재렌더링 시 이벤트 리스너 제거
+        return () => window.removeEventListener("scroll", throttledScroll);
+    }, [throttledScroll]);
 
     // page 매개변수에 타입 지정 (Implicit any 해결)
     const allLps = data?.pages.flatMap((page: LpPageResponse) => page.data.data) || [];
@@ -141,7 +154,6 @@ export const HomePage = () => {
                             )}
                         </div>
 
-                        <div ref={ref} className="h-10 w-full" />
                     </div>
 
                     <button 
