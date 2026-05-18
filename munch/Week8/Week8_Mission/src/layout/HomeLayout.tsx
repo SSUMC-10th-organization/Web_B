@@ -10,10 +10,15 @@ import SearchPanel from "../components/SearchPanel";
 import { toast } from "../components/Toast";
 import { LOCAL_STORAGE_KEY } from "../constants/key";
 import { useAuth } from "../context/AuthContext";
+import useSidebar from "../hooks/useSideBar";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 
 const HomeLayout = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const {
+    isOpen: isSidebarOpen,
+    close: closeSidebar,
+    toggle: toggleSidebar,
+  } = useSidebar();
   const [isLpModalOpen, setIsLpModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -44,7 +49,7 @@ const HomeLayout = () => {
   return (
     <div className="min-h-screen flex flex-col bg-[#121212] text-white">
       <Navbar
-        toggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
+        toggleSidebar={toggleSidebar}
         onSearchOpen={() => setIsSearchOpen(true)}
       />
 
@@ -58,7 +63,7 @@ const HomeLayout = () => {
         {isSidebarOpen && (
           <div
             className="fixed inset-0 bg-black/60 z-40"
-            onClick={() => setIsSidebarOpen(false)}
+            onClick={closeSidebar}
           />
         )}
 
@@ -77,14 +82,14 @@ const HomeLayout = () => {
               <>
                 <Link
                   to="/login"
-                  onClick={() => setIsSidebarOpen(false)}
+                  onClick={closeSidebar}
                   className="text-sm hover:text-[#e91e8c] flex items-center gap-2 transition-colors"
                 >
                   🔑 로그인
                 </Link>
                 <Link
                   to="/signup"
-                  onClick={() => setIsSidebarOpen(false)}
+                  onClick={closeSidebar}
                   className="text-sm hover:text-[#e91e8c] flex items-center gap-2 transition-colors"
                 >
                   📝 회원가입
@@ -92,10 +97,11 @@ const HomeLayout = () => {
               </>
             ) : (
               <>
+                {/* 사이드바 찾기 버튼도 SearchPanel 열기 */}
                 <button
                   type="button"
                   onClick={() => {
-                    setIsSidebarOpen(false);
+                    closeSidebar();
                     setIsSearchOpen(true);
                   }}
                   className="text-sm hover:text-[#e91e8c] flex items-center gap-2 transition-colors text-left"
@@ -104,7 +110,7 @@ const HomeLayout = () => {
                 </button>
                 <Link
                   to="/mypage"
-                  onClick={() => setIsSidebarOpen(false)}
+                  onClick={closeSidebar}
                   className="text-sm hover:text-[#e91e8c] flex items-center gap-2 transition-colors"
                 >
                   👤 마이페이지
@@ -118,7 +124,7 @@ const HomeLayout = () => {
               <button
                 type="button"
                 onClick={() => {
-                  setIsSidebarOpen(false);
+                  closeSidebar();
                   setIsWithdrawModalOpen(true);
                 }}
                 className="text-sm text-gray-500 hover:text-red-400 transition-colors"

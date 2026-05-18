@@ -15,6 +15,7 @@ import SearchPanel from "../components/SearchPanel";
 import { toast } from "../components/Toast";
 import { LOCAL_STORAGE_KEY } from "../constants/key";
 import { useAuth } from "../context/AuthContext";
+import useSidebar from "../hooks/useSideBar";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 
 const ProtectedLayout = () => {
@@ -22,7 +23,11 @@ const ProtectedLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const {
+    isOpen: isSidebarOpen,
+    close: closeSidebar,
+    toggle: toggleSidebar,
+  } = useSidebar();
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -60,7 +65,7 @@ const ProtectedLayout = () => {
   return (
     <div className="min-h-screen flex flex-col bg-[#121212] text-white">
       <Navbar
-        toggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
+        toggleSidebar={toggleSidebar}
         onSearchOpen={() => setIsSearchOpen(true)}
       />
 
@@ -74,7 +79,7 @@ const ProtectedLayout = () => {
         {isSidebarOpen && (
           <div
             className="fixed inset-0 bg-black/60 z-40"
-            onClick={() => setIsSidebarOpen(false)}
+            onClick={closeSidebar}
           />
         )}
 
@@ -92,7 +97,7 @@ const ProtectedLayout = () => {
             <button
               type="button"
               onClick={() => {
-                setIsSidebarOpen(false);
+                closeSidebar();
                 setIsSearchOpen(true);
               }}
               className="text-sm hover:text-[#e91e8c] flex items-center gap-2 transition-colors text-left"
@@ -101,7 +106,7 @@ const ProtectedLayout = () => {
             </button>
             <Link
               to="/mypage"
-              onClick={() => setIsSidebarOpen(false)}
+              onClick={closeSidebar}
               className="text-sm hover:text-[#e91e8c] flex items-center gap-2 transition-colors"
             >
               👤 마이페이지
@@ -112,7 +117,7 @@ const ProtectedLayout = () => {
             <button
               type="button"
               onClick={() => {
-                setIsSidebarOpen(false);
+                closeSidebar();
                 setIsWithdrawModalOpen(true);
               }}
               className="text-sm text-gray-500 hover:text-red-400 transition-colors"
