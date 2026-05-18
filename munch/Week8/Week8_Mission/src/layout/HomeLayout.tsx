@@ -92,7 +92,6 @@ const HomeLayout = () => {
               </>
             ) : (
               <>
-                {/* 사이드바 찾기 버튼도 SearchPanel 열기 */}
                 <button
                   type="button"
                   onClick={() => {

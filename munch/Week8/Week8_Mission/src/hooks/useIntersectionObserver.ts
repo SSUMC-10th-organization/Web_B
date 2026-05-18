@@ -1,27 +1,31 @@
 import { useEffect, useRef } from "react";
+import useThrottle from "./useThrotle";
 
 export const useIntersectionObserver = (
-	callback: () => void,
-	hasNextPage: boolean | undefined,
+  callback: () => void,
+  hasNextPage: boolean | undefined,
+  interval: number = 1000,
 ) => {
-	const observerRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<HTMLDivElement>(null);
 
-	useEffect(() => {
-		const observer = new IntersectionObserver(
-			(entries) => {
-				if (entries[0].isIntersecting && hasNextPage) {
-					callback();
-				}
-			},
-			{ threshold: 0.5 },
-		);
+  const throttledCallback = useThrottle(callback, interval);
 
-		if (observerRef.current) {
-			observer.observe(observerRef.current);
-		}
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage) {
+          throttledCallback();
+        }
+      },
+      { threshold: 0.5 },
+    );
 
-		return () => observer.disconnect();
-	}, [callback, hasNextPage]);
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
 
-	return observerRef;
+    return () => observer.disconnect();
+  }, [throttledCallback, hasNextPage]);
+
+  return observerRef;
 };

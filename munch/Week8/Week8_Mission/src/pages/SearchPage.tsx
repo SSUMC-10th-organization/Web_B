@@ -2,6 +2,7 @@ import { useSearchParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { ErrorFallback } from "../components/CommonStates";
 import { LpCardSkeleton } from "../components/Skeletons";
+import useDebounce from "../hooks/useDebounce";
 import useSearchLpList from "../hooks/queries/useSearchLpList";
 import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
 import type { Lp } from "../types/lp";
@@ -16,10 +17,11 @@ const moreSkeletonKeys = Array.from(
 );
 
 const SearchPage = () => {
-  // URL 파라미터에서 검색어와 타입 읽기
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q") ?? "";
   const searchType = (searchParams.get("type") ?? "title") as SearchType;
+
+  const debouncedQuery = useDebounce(query, 300);
 
   const {
     data,
@@ -29,7 +31,7 @@ const SearchPage = () => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useSearchLpList(query, searchType);
+  } = useSearchLpList(debouncedQuery, searchType);
 
   const loadMoreRef = useIntersectionObserver(fetchNextPage, hasNextPage);
 
@@ -37,18 +39,16 @@ const SearchPage = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
-      {/* 검색어 표시 */}
       <div className="mb-6">
         <h2 className="text-white font-bold text-lg">
           {searchType === "tag" ? "# " : ""}
-          {query}
+          {debouncedQuery}
           <span className="text-gray-400 font-normal text-sm ml-2">
             검색 결과
           </span>
         </h2>
       </div>
 
-      {/* 로딩 */}
       {isPending && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {skeletonKeys.map((key) => (
@@ -59,7 +59,6 @@ const SearchPage = () => {
 
       {isError && <ErrorFallback onRetry={refetch} />}
 
-      {/* 결과 없음 */}
       {!isPending && !isError && results.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-gray-500">
           <p className="text-lg mb-1">검색 결과가 없습니다.</p>
@@ -67,7 +66,6 @@ const SearchPage = () => {
         </div>
       )}
 
-      {/* 결과 그리드 */}
       {!isPending && !isError && results.length > 0 && (
         <>
           <p className="text-xs text-gray-500 mb-4">총 {results.length}개</p>
