@@ -2,13 +2,13 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { getMyInfo } from "../apis/auth";
-import { useState } from "react";
 import { Sidebar } from "./Sidebar";
+import { useSidebar } from "../hooks/useSidebar";
 import { queryClient } from "../App";
 
 export const Navbar = () => {
   const { accessToken, logout } = useAuth();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { isOpen: isSidebarOpen, toggle: toggleSidebar, close: closeSidebar } = useSidebar();
 
   const { data } = useQuery({
     queryKey: ["myInfo"],
@@ -31,7 +31,7 @@ export const Navbar = () => {
     <>
       <nav className="flex items-center justify-between px-6 py-4 bg-[#111] border-b border-[#222]">
         <button
-          onClick={() => setIsSidebarOpen(true)}
+          onClick={toggleSidebar}
           className="text-white hover:text-[#ccc] transition-colors"
           aria-label="메뉴 열기"
         >
@@ -93,7 +93,7 @@ export const Navbar = () => {
         </div>
       </nav>
 
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
     </>
   );
 };

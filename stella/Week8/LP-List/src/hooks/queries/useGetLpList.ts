@@ -4,6 +4,8 @@ import { getLpList } from "../../apis/lp";
 import { QUERY_KEY } from "../../constants/key";
 
 function useGetLpList({ search, order, limit }: Omit<PaginationDto, "cursor">) {
+  const isSearchEmpty = search !== undefined && (search === "" || search.trim() === "");
+
   return useInfiniteQuery({
     queryKey: [QUERY_KEY.lps, search, order],
     queryFn: ({ pageParam: cursor }) =>
@@ -13,6 +15,7 @@ function useGetLpList({ search, order, limit }: Omit<PaginationDto, "cursor">) {
       lastPage.data.hasNext ? lastPage.data.nextCursor : undefined,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
+    enabled: !isSearchEmpty,
     select: (data) => ({
       pages: data.pages.flatMap((page) => page.data.data),
       pageParams: data.pageParams,
