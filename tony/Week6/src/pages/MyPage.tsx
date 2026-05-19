@@ -56,12 +56,13 @@ export default function MyPage() {
 						}
 					: old,
 			);
+			setShowEdit(false);
 			return { previous };
 		},
 		onError: (_, __, context) => {
 			queryClient.setQueryData(["me"], context?.previous);
+			setShowEdit(true);
 		},
-		onSuccess: () => setShowEdit(false),
 		onSettled: () => {
 			queryClient.invalidateQueries({ queryKey: ["me"] });
 		},

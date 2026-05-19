@@ -4,6 +4,9 @@ import { getLps, type Lp } from "../apis/lp";
 import AddLpModal from "../components/AddLpModal";
 import LpCard from "../components/LpCard";
 import SkeletonCard from "../components/SkeletonCard";
+import useThrottle from "../hooks/useThrottle";
+
+const THROTTLE_INTERVAL = 3000;
 
 type LpPage = { data: Lp[]; hasNext: boolean; nextCursor: number | null };
 
@@ -11,6 +14,8 @@ export default function HomePage() {
 	const [order, setOrder] = useState<"asc" | "desc">("desc");
 	const [showModal, setShowModal] = useState(false);
 	const sentinelRef = useRef<HTMLDivElement>(null);
+	const [scrollY, setScrollY] = useState(0);
+	const throttledScrollY = useThrottle(scrollY, THROTTLE_INTERVAL);
 
 	const {
 		data,
@@ -36,17 +41,28 @@ export default function HomePage() {
 		gcTime: 1000 * 60 * 6,
 	});
 
+	const hasNextPageRef = useRef(hasNextPage);
+	const isFetchingRef = useRef(isFetchingNextPage);
 	useEffect(() => {
-		if (!sentinelRef.current) return;
-		const el = sentinelRef.current;
-		const observer = new IntersectionObserver((entries) => {
-			if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-				fetchNextPage();
-			}
-		});
-		observer.observe(el);
-		return () => observer.disconnect();
-	}, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+		hasNextPageRef.current = hasNextPage;
+		isFetchingRef.current = isFetchingNextPage;
+	}, [hasNextPage, isFetchingNextPage]);
+
+	// 스크롤 이벤트 등록
+	useEffect(() => {
+		const handleScroll = () => setScrollY(window.scrollY);
+		window.addEventListener("scroll", handleScroll);
+		return () => window.removeEventListener("scroll", handleScroll);
+	}, []);
+
+	// throttledScrollY 기준으로만 하단 감지 → 3초에 한 번만 fetchNextPage 호출
+	useEffect(() => {
+		const scrollBottom = throttledScrollY + window.innerHeight;
+		const pageBottom = document.documentElement.scrollHeight - 100;
+		if (scrollBottom >= pageBottom && hasNextPageRef.current && !isFetchingRef.current) {
+			fetchNextPage();
+		}
+	}, [throttledScrollY, fetchNextPage]);
 
 	return (
 		<div>

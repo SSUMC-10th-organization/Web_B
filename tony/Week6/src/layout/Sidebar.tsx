@@ -62,7 +62,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 			>
 				<nav className="flex flex-col gap-1">
 					<NavLink to="/" className={linkStyle} end>
-						🔍 찾기
+						🏠 홈
+					</NavLink>
+					<NavLink to="/search" className={linkStyle}>
+						🔍 태그 검색
 					</NavLink>
 					<NavLink to="/my" className={linkStyle}>
 						👤 마이페이지

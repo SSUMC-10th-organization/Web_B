@@ -55,9 +55,10 @@ export const getLps = async (
 	cursor?: number,
 	limit = 10,
 	order: "asc" | "desc" = "desc",
+	search?: string,
 ) => {
 	const { data } = await api.get<LpListResponse>("/v1/lps", {
-		params: { cursor, limit, order },
+		params: { cursor, limit, order, search },
 	});
 	return data.data;
 };
