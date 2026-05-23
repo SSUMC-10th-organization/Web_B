@@ -18,7 +18,7 @@ export default function CartContainer() {
   // 3. 예외 처리: 장바구니에 담긴 아이템이 하나도 없을 때 보여줄 화면
   if (amount < 1) {
     return (
-      <section className="max-w-[600px] mx-auto my-16 text-center px-4">
+      <section className="max-w-[600px] mx-auto min-h-[90vh] flex flex-col justify-center items-center text-center px-4">
         <header>
           <h2 className="text-3xl font-extrabold text-gray-800 mb-4 tracking-wide">
             당신의 장바구니
@@ -31,7 +31,7 @@ export default function CartContainer() {
     );
   }
 
-  // 4. 정상 출력: 장바구니에 아이템이 있을 때의 화면
+  // 정상 출력: 장바구니에 아이템이 있을 때의 화면
   return (
     <section className="max-w-[600px] mx-auto my-12 px-4 pb-24">
       <header className="text-center mb-10">
@@ -43,7 +43,7 @@ export default function CartContainer() {
       {/* 음반 리스트 영역 */}
       <div>
         {cartItems.map((item) => (
-          // 5. map을 돌며 개별 CartItem 컴포넌트에 props를 전달하여 뿌려줍니다.
+          // map을 돌며 개별 CartItem 컴포넌트에 props를 전달하여 뿌려줍니다.
           <CartItem key={item.id} {...item} />
         ))}
       </div>

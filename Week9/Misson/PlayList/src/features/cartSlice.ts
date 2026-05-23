@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import cartItems from '..//constants/cartItems'; // Step 1에서 만든 데이터 임포트
+import cartItems from '../constants/cartItems'; // Step 1에서 만든 데이터 임포트
 
 // 상태(State) 타입 정의
 interface CartItemType {
