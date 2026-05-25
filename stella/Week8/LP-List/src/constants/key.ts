@@ -7,4 +7,5 @@ export const QUERY_KEY = {
   lps: "lps",
   lp: "lp",
   lpComments: "lpComments", // 추가
+  myInfo: "myInfo",
 };

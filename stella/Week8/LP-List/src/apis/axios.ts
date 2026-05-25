@@ -2,6 +2,7 @@ import type { AxiosInstance, InternalAxiosRequestConfig } from "axios";
 import axios from "axios";
 import { LOCAL_STORAGE_KEY } from "../constants/key";
 import { useLocalStorage } from "../hooks/useLocalStorage";
+import { useNavigate } from "react-router-dom";
 
 interface CustomInternalAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
@@ -32,6 +33,7 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest: CustomInternalAxiosRequestConfig = error.config;
+    const navigate = useNavigate();
 
     if (
       error.reponse &&
@@ -47,7 +49,7 @@ axiosInstance.interceptors.response.use(
         );
         removeAccessToken();
         removeRefreshToken();
-        window.location.href = "/login";
+        navigate("/login", { replace: true });
         return Promise.reject(error);
       }
 

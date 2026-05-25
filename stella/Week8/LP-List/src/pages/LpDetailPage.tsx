@@ -12,7 +12,6 @@ import useDeleteComment from "../hooks/useDeleteComment";
 import useLikeLp from "../hooks/useLikeLp";
 import { useUpdateLp } from "../hooks/useUpdateLp";
 import { useDeleteLp } from "../hooks/useDeleteLp";
-import { useAuth } from "../context/AuthContext";
 import { PAGINATION_ORDER } from "../enums/common";
 
 const CommentSkeleton = () => (
@@ -30,7 +29,6 @@ export const LpDetailPage = () => {
   const { lpId } = useParams();
   const numLpId = Number(lpId);
   const navigate = useNavigate();
-  const { accessToken } = useAuth();
 
   const [commentOrder, setCommentOrder] = useState<PAGINATION_ORDER>(
     PAGINATION_ORDER.desc,
@@ -59,7 +57,7 @@ export const LpDetailPage = () => {
   const { data: myInfo } = useQuery({
     queryKey: ["myInfo"],
     queryFn: getMyInfo,
-    enabled: !!accessToken,
+    enabled: true,
   });
 
   const {
@@ -82,18 +80,6 @@ export const LpDetailPage = () => {
     useUpdateComment(numLpId);
   const { mutate: deleteComment } = useDeleteComment(numLpId);
   const { mutate: toggleLike } = useLikeLp(numLpId, myId);
-
-  // 문제 1 수정 — accessToken이 undefined(초기화 중)일 때는 실행하지 않음
-  useEffect(() => {
-    if (accessToken === null) {
-      const confirmed = window.confirm("로그인이 필요한 서비스입니다.");
-      if (confirmed) {
-        navigate(`/login?redirect=/lp/${lpId}`);
-      } else {
-        navigate("/", { replace: true });
-      }
-    }
-  }, [accessToken, lpId, navigate]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(

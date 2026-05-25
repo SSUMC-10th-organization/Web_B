@@ -1,14 +1,14 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getMyInfo } from "../apis/auth";
 import { Sidebar } from "./Sidebar";
 import { useSidebar } from "../hooks/useSidebar";
-import { queryClient } from "../App";
 
 export const Navbar = () => {
   const { accessToken, logout } = useAuth();
   const { isOpen: isSidebarOpen, toggle: toggleSidebar, close: closeSidebar } = useSidebar();
+  const queryClient = useQueryClient();
 
   const { data } = useQuery({
     queryKey: ["myInfo"],

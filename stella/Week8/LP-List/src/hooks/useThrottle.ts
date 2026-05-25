@@ -1,11 +1,10 @@
 import { useEffect, useRef } from "react";
 
-export function useThrottle<T extends (...args: any[]) => any>(
-  callback: T,
-  interval: number
-): T {
+export function useThrottle<
+  T extends (...args: Parameters<T>) => ReturnType<T>,
+>(callback: T, interval: number): T {
   const lastCallRef = useRef<number>(0);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {
