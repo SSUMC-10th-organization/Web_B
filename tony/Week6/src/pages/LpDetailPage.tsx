@@ -1,5 +1,6 @@
 import {
 	useInfiniteQuery,
+	useMutation,
 	useQuery,
 	useQueryClient,
 } from "@tanstack/react-query";
@@ -19,7 +20,9 @@ import {
 	getLpDetail,
 	postComment,
 	postLike,
+	updateComment,
 	updateLp,
+	uploadImage,
 } from "../apis/lp";
 import { getMyProfile } from "../apis/user";
 import SkeletonComment from "../components/SkeletonComment";
@@ -49,26 +52,13 @@ const AvatarCircle = ({
 	size?: number;
 }) => (
 	<div
-		style={{
-			width: size,
-			height: size,
-			borderRadius: "50%",
-			overflow: "hidden",
-			flexShrink: 0,
-			background: "#ec4899",
-			display: "flex",
-			alignItems: "center",
-			justifyContent: "center",
-		}}
+		className="rounded-full overflow-hidden shrink-0 bg-pink-500 flex items-center justify-center"
+		style={{ width: size, height: size }}
 	>
 		{avatar ? (
-			<img
-				src={avatar}
-				alt={name}
-				style={{ width: "100%", height: "100%", objectFit: "cover" }}
-			/>
+			<img src={avatar} alt={name} className="w-full h-full object-cover" />
 		) : (
-			<span style={{ color: "#fff", fontWeight: "bold", fontSize: size * 0.4 }}>
+			<span className="text-white font-bold" style={{ fontSize: size * 0.4 }}>
 				{name?.[0]?.toUpperCase()}
 			</span>
 		)}
@@ -85,24 +75,24 @@ export default function LpDetailPage() {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const commentOrder = (searchParams.get("order") as "asc" | "desc") ?? "desc";
 	const [commentText, setCommentText] = useState("");
-	const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+	const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+	const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+	const [editingText, setEditingText] = useState("");
 	const sentinelRef = useRef<HTMLDivElement>(null);
+	const editFileInputRef = useRef<HTMLInputElement>(null);
 
 	const [isLiked, setIsLiked] = useState(false);
 	const [likeCount, setLikeCount] = useState(0);
-	const [isLiking, setIsLiking] = useState(false);
 
 	const [showEditModal, setShowEditModal] = useState(false);
 	const [editTitle, setEditTitle] = useState("");
-	const [editContent, setEditContent] = useState("");
 	const [editThumbnail, setEditThumbnail] = useState("");
-	const [editYear, setEditYear] = useState<number>(0);
-	const [isUpdating, setIsUpdating] = useState(false);
+	const [editPreviewUrl, setEditPreviewUrl] = useState<string | null>(null);
+	const [isEditUploading, setIsEditUploading] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
 
 	const id = Number(lpId);
 
-	// 비로그인 처리
 	useEffect(() => {
 		if (!isLoggedIn) {
 			alert("로그인이 필요한 서비스입니다. 로그인을 해주세요!");
@@ -130,8 +120,11 @@ export default function LpDetailPage() {
 	});
 
 	useEffect(() => {
-		if (lp) setLikeCount(lp.likeCount);
-	}, [lp]);
+		if (lp) {
+			setLikeCount(lp.likes?.length ?? 0);
+			setIsLiked(lp.likes?.some((l) => l.userId === me?.id) ?? false);
+		}
+	}, [lp, me]);
 
 	const {
 		data: commentsData,
@@ -167,68 +160,85 @@ export default function LpDetailPage() {
 
 	const isAuthor = !!me && !!lp && me.id === lp.author.id;
 
-	const handleLikeToggle = async () => {
-		if (isLiking) return;
-		setIsLiking(true);
-		try {
-			if (isLiked) {
-				await deleteLike(id);
-				setIsLiked(false);
-				setLikeCount((c) => c - 1);
-			} else {
-				await postLike(id);
-				setIsLiked(true);
-				setLikeCount((c) => c + 1);
-			}
-		} finally {
-			setIsLiking(false);
-		}
-	};
-
-	const handleCommentSubmit = async () => {
-		if (!commentText.trim() || isSubmittingComment) return;
-		setIsSubmittingComment(true);
-		try {
-			await postComment(id, commentText.trim());
+	const { mutate: submitComment, isPending: isSubmitting } = useMutation({
+		mutationFn: (text: string) => postComment(id, text),
+		onSuccess: () => {
 			setCommentText("");
 			queryClient.invalidateQueries({ queryKey: ["lpComments", id] });
-		} finally {
-			setIsSubmittingComment(false);
-		}
-	};
+		},
+	});
 
-	const handleCommentDelete = async (commentId: number) => {
-		if (!confirm("댓글을 삭제하시겠습니까?")) return;
-		try {
-			await deleteComment(id, commentId);
+	const { mutate: removeComment } = useMutation({
+		mutationFn: (commentId: number) => deleteComment(id, commentId),
+		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["lpComments", id] });
-		} catch {
-			alert("댓글 삭제에 실패했습니다.");
-		}
-	};
+		},
+	});
+
+	const { mutate: editComment } = useMutation({
+		mutationFn: ({
+			commentId,
+			content,
+		}: {
+			commentId: number;
+			content: string;
+		}) => updateComment(id, commentId, content),
+		onSuccess: () => {
+			setEditingCommentId(null);
+			queryClient.invalidateQueries({ queryKey: ["lpComments", id] });
+		},
+	});
+
+	const { mutate: toggleLike, isPending: isLiking } = useMutation({
+		mutationFn: (currentlyLiked: boolean) =>
+			currentlyLiked ? deleteLike(id) : postLike(id),
+		onMutate: (currentlyLiked) => {
+			const prevCount = likeCount ?? 0;
+			setIsLiked(!currentlyLiked);
+			setLikeCount(currentlyLiked ? prevCount - 1 : prevCount + 1);
+			return { wasLiked: currentlyLiked, prevCount };
+		},
+		onError: (_, __, context) => {
+			if (context) {
+				setIsLiked(context.wasLiked);
+				setLikeCount(context.prevCount);
+			}
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["lp", id] });
+		},
+	});
+
+	const { mutate: saveEdit, isPending: isUpdating } = useMutation({
+		mutationFn: (body: { title?: string; thumbnail?: string }) =>
+			updateLp(id, body),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["lp", id] });
+			setShowEditModal(false);
+			setEditPreviewUrl(null);
+		},
+	});
 
 	const handleEditOpen = () => {
 		if (!lp) return;
 		setEditTitle(lp.title);
-		setEditContent(lp.content);
-		setEditThumbnail(lp.thumbnail);
-		setEditYear(lp.publishedYear);
+		setEditThumbnail(lp.thumbnail ?? "");
+		setEditPreviewUrl(null);
 		setShowEditModal(true);
 	};
 
-	const handleEditSubmit = async () => {
-		setIsUpdating(true);
+	const handleEditImageChange = async (
+		e: React.ChangeEvent<HTMLInputElement>,
+	) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+		setEditPreviewUrl(URL.createObjectURL(file));
+		setIsEditUploading(true);
 		try {
-			await updateLp(id, {
-				title: editTitle,
-				content: editContent,
-				thumbnail: editThumbnail,
-				publishedYear: editYear,
-			});
-			await queryClient.invalidateQueries({ queryKey: ["lp", id] });
-			setShowEditModal(false);
+			const imageUrl = await uploadImage(file);
+			setEditThumbnail(imageUrl);
 		} finally {
-			setIsUpdating(false);
+			setIsEditUploading(false);
 		}
 	};
 
@@ -247,27 +257,16 @@ export default function LpDetailPage() {
 	if (!isLoggedIn) return null;
 
 	if (isLoading)
-		return (
-			<div style={{ padding: "3rem", textAlign: "center", color: "#6b7280" }}>
-				로딩 중...
-			</div>
-		);
+		return <div className="p-12 text-center text-gray-500">로딩 중...</div>;
 
 	if (isError)
 		return (
-			<div style={{ padding: "3rem", textAlign: "center" }}>
-				<p style={{ color: "#ef4444", marginBottom: "1rem" }}>
-					불러오지 못했어요.
-				</p>
+			<div className="p-12 text-center">
+				<p className="text-red-500 mb-4">불러오지 못했어요.</p>
 				<button
 					type="button"
 					onClick={() => refetch()}
-					style={{
-						padding: "0.5rem 1.5rem",
-						borderRadius: "6px",
-						border: "1px solid #d1d5db",
-						cursor: "pointer",
-					}}
+					className="px-6 py-2 rounded-md border border-gray-300 cursor-pointer"
 				>
 					다시 시도
 				</button>
@@ -275,166 +274,99 @@ export default function LpDetailPage() {
 		);
 
 	return (
-		<div style={{ maxWidth: "680px", margin: "0 auto" }}>
+		<div className="max-w-[680px] mx-auto">
 			{/* 수정 모달 */}
 			{showEditModal && (
-				<div
-					style={{
-						position: "fixed",
-						inset: 0,
-						background: "rgba(0,0,0,0.5)",
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						zIndex: 100,
-					}}
-				>
-					<div
-						style={{
-							background: "#fff",
-							borderRadius: "12px",
-							padding: "2rem",
-							width: "90%",
-							maxWidth: "480px",
-							display: "flex",
-							flexDirection: "column",
-							gap: "0.75rem",
-						}}
-					>
-						<h2 style={{ fontSize: "1.1rem", fontWeight: "bold" }}>LP 수정</h2>
+				<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
+					<div className="bg-[#1c1c1e] rounded-2xl p-8 w-[90%] max-w-[380px] flex flex-col gap-4 relative">
+						{/* 닫기 */}
+						<button
+							type="button"
+							onClick={() => setShowEditModal(false)}
+							className="absolute top-4 right-4 bg-transparent border-0 text-white text-[1.2rem] cursor-pointer"
+						>
+							✕
+						</button>
+
+						{/* 이미지 (클릭 시 파일 선택) */}
+						{/* biome-ignore lint/a11y/noStaticElementInteractions: 파일 선택 트리거 */}
+						{/* biome-ignore lint/a11y/useKeyWithClickEvents: 파일 선택 트리거 */}
+						<div
+							className={`flex justify-center ${isEditUploading ? "cursor-wait" : "cursor-pointer"}`}
+							onClick={() =>
+								!isEditUploading && editFileInputRef.current?.click()
+							}
+						>
+							<div className="relative w-50 h-50">
+								<img
+									src={editPreviewUrl ?? editThumbnail ?? ""}
+									alt="thumbnail"
+									className={`w-50 h-50 rounded-full object-cover bg-[#3a3a3c] ${isEditUploading ? "opacity-50" : "opacity-100"}`}
+								/>
+								{isEditUploading && (
+									<div className="absolute inset-0 flex items-center justify-center text-white text-[0.85rem]">
+										업로드 중...
+									</div>
+								)}
+							</div>
+							<input
+								ref={editFileInputRef}
+								type="file"
+								accept="image/*"
+								className="hidden"
+								onChange={handleEditImageChange}
+							/>
+						</div>
+
+						{/* 제목 */}
 						<input
 							value={editTitle}
 							onChange={(e) => setEditTitle(e.target.value)}
 							placeholder="제목"
-							style={{
-								padding: "0.6rem 1rem",
-								borderRadius: "6px",
-								border: "1px solid #d1d5db",
-								fontSize: "0.9rem",
-							}}
+							className="px-4 py-3 rounded-lg border border-[#3a3a3c] bg-[#2c2c2e] text-white text-[0.95rem] outline-none"
 						/>
-						<textarea
-							value={editContent}
-							onChange={(e) => setEditContent(e.target.value)}
-							placeholder="내용"
-							rows={4}
-							style={{
-								padding: "0.6rem 1rem",
-								borderRadius: "6px",
-								border: "1px solid #d1d5db",
-								fontSize: "0.9rem",
-								resize: "vertical",
-							}}
-						/>
-						<input
-							value={editThumbnail}
-							onChange={(e) => setEditThumbnail(e.target.value)}
-							placeholder="썸네일 URL"
-							style={{
-								padding: "0.6rem 1rem",
-								borderRadius: "6px",
-								border: "1px solid #d1d5db",
-								fontSize: "0.9rem",
-							}}
-						/>
-						<input
-							type="number"
-							value={editYear}
-							onChange={(e) => setEditYear(Number(e.target.value))}
-							placeholder="발매년도"
-							style={{
-								padding: "0.6rem 1rem",
-								borderRadius: "6px",
-								border: "1px solid #d1d5db",
-								fontSize: "0.9rem",
-							}}
-						/>
-						<div
-							style={{
-								display: "flex",
-								gap: "0.5rem",
-								justifyContent: "flex-end",
-							}}
+
+						{/* 저장 버튼 */}
+						<button
+							type="button"
+							onClick={() =>
+								saveEdit({
+									title: editTitle,
+									thumbnail: editThumbnail || undefined,
+								})
+							}
+							disabled={isUpdating || isEditUploading}
+							className={`py-[0.8rem] rounded-lg border-0 bg-pink-500 text-white font-bold ${isUpdating || isEditUploading ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}
 						>
-							<button
-								type="button"
-								onClick={() => setShowEditModal(false)}
-								style={{
-									padding: "0.5rem 1.25rem",
-									borderRadius: "6px",
-									border: "1px solid #d1d5db",
-									cursor: "pointer",
-								}}
-							>
-								취소
-							</button>
-							<button
-								type="button"
-								onClick={handleEditSubmit}
-								disabled={isUpdating}
-								style={{
-									padding: "0.5rem 1.25rem",
-									borderRadius: "6px",
-									border: "none",
-									background: "#ec4899",
-									color: "#fff",
-									cursor: "pointer",
-								}}
-							>
-								{isUpdating ? "저장 중..." : "저장"}
-							</button>
-						</div>
+							{isUpdating ? "저장 중..." : "저장"}
+						</button>
 					</div>
 				</div>
 			)}
 
 			{/* 작성자 정보 + 날짜 */}
-			<div
-				style={{
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "space-between",
-					marginBottom: "1rem",
-				}}
-			>
-				<div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+			<div className="flex items-center justify-between mb-4">
+				<div className="flex items-center gap-[0.6rem]">
 					<AvatarCircle
 						name={lp?.author.name ?? ""}
 						avatar={lp?.author.avatar}
 					/>
-					<span style={{ fontWeight: "bold", fontSize: "0.95rem" }}>
-						{lp?.author.name}
-					</span>
+					<span className="font-bold text-[0.95rem]">{lp?.author.name}</span>
 				</div>
-				<span style={{ color: "#9ca3af", fontSize: "0.85rem" }}>
+				<span className="text-gray-400 text-[0.85rem]">
 					{lp?.createdAt ? formatRelativeDate(lp.createdAt) : ""}
 				</span>
 			</div>
 
 			{/* 제목 + 수정/삭제 */}
-			<div
-				style={{
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "space-between",
-					marginBottom: "1.25rem",
-				}}
-			>
-				<h1 style={{ fontSize: "1.6rem", fontWeight: "bold", margin: 0 }}>
-					{lp?.title}
-				</h1>
+			<div className="flex items-center justify-between mb-5">
+				<h1 className="text-[1.6rem] font-bold m-0">{lp?.title}</h1>
 				{isAuthor && (
-					<div style={{ display: "flex", gap: "0.5rem" }}>
+					<div className="flex gap-2">
 						<button
 							type="button"
 							onClick={handleEditOpen}
-							style={{
-								background: "none",
-								border: "none",
-								cursor: "pointer",
-								fontSize: "1.1rem",
-								color: "#6b7280",
-							}}
+							className="bg-transparent border-0 cursor-pointer text-[1.1rem] text-gray-500"
 							title="수정"
 						>
 							✏️
@@ -443,13 +375,7 @@ export default function LpDetailPage() {
 							type="button"
 							onClick={handleDelete}
 							disabled={isDeleting}
-							style={{
-								background: "none",
-								border: "none",
-								cursor: "pointer",
-								fontSize: "1.1rem",
-								color: "#6b7280",
-							}}
+							className="bg-transparent border-0 cursor-pointer text-[1.1rem] text-gray-500"
 							title="삭제"
 						>
 							🗑️
@@ -463,49 +389,22 @@ export default function LpDetailPage() {
 				<img
 					src={lp.thumbnail}
 					alt={lp.title}
-					style={{
-						width: "100%",
-						aspectRatio: "1/1",
-						objectFit: "cover",
-						borderRadius: "12px",
-						marginBottom: "1.5rem",
-						display: "block",
-					}}
+					className="w-full aspect-square object-cover rounded-xl mb-6 block"
 				/>
 			)}
 
 			{/* 본문 */}
-			<p
-				style={{
-					lineHeight: 1.8,
-					color: "#374151",
-					marginBottom: "1.5rem",
-					fontSize: "0.95rem",
-				}}
-			>
+			<p className="leading-[1.8] text-gray-700 mb-6 text-[0.95rem]">
 				{lp?.content}
 			</p>
 
 			{/* 태그 */}
 			{lp?.tags && lp.tags.length > 0 && (
-				<div
-					style={{
-						display: "flex",
-						flexWrap: "wrap",
-						gap: "0.4rem",
-						marginBottom: "1.5rem",
-					}}
-				>
+				<div className="flex flex-wrap gap-[0.4rem] mb-6">
 					{lp.tags.map((tag) => (
 						<span
 							key={tag.id}
-							style={{
-								padding: "0.25rem 0.75rem",
-								borderRadius: "999px",
-								background: "#f3f4f6",
-								color: "#374151",
-								fontSize: "0.85rem",
-							}}
+							className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-[0.85rem]"
 						>
 							#{tag.name}
 						</span>
@@ -514,47 +413,35 @@ export default function LpDetailPage() {
 			)}
 
 			{/* 좋아요 */}
-			<div style={{ marginBottom: "2rem" }}>
+			<div className="mb-8">
 				<button
 					type="button"
-					onClick={handleLikeToggle}
+					onClick={() => toggleLike(isLiked)}
 					disabled={isLiking}
-					style={{
-						display: "flex",
-						alignItems: "center",
-						gap: "0.4rem",
-						padding: "0.5rem 1.25rem",
-						borderRadius: "999px",
-						border: `1px solid ${isLiked ? "#ec4899" : "#e5e7eb"}`,
-						background: isLiked ? "#fdf2f8" : "#fff",
-						color: isLiked ? "#ec4899" : "#374151",
-						cursor: "pointer",
-						fontSize: "0.95rem",
-						fontWeight: "bold",
-					}}
+					className={`flex items-center gap-[0.4rem] px-5 py-2 rounded-full border font-bold text-[0.95rem] cursor-pointer ${
+						isLiked
+							? "border-pink-500 bg-[#fdf2f8] text-pink-500"
+							: "border-gray-200 bg-white text-gray-700"
+					}`}
 				>
 					{isLiked ? "❤️" : "🤍"} {likeCount}
 				</button>
 			</div>
 
-			<hr style={{ marginBottom: "1.5rem", borderColor: "#e5e7eb" }} />
+			<hr className="mb-6 border-gray-200" />
 
 			{/* 댓글 정렬 */}
-			<div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
+			<div className="flex gap-2 mb-4">
 				{(["desc", "asc"] as const).map((o) => (
 					<button
 						key={o}
 						type="button"
 						onClick={() => setSearchParams({ order: o })}
-						style={{
-							padding: "0.3rem 0.75rem",
-							borderRadius: "999px",
-							border: `1px solid ${commentOrder === o ? "#000" : "#d1d5db"}`,
-							background: commentOrder === o ? "#000" : "#fff",
-							color: commentOrder === o ? "#fff" : "#000",
-							cursor: "pointer",
-							fontSize: "0.85rem",
-						}}
+						className={`px-3 py-[0.3rem] rounded-full border cursor-pointer text-[0.85rem] ${
+							commentOrder === o
+								? "border-black bg-black text-white"
+								: "border-gray-300 bg-white text-black"
+						}`}
 					>
 						{o === "desc" ? "최신순" : "오래된순"}
 					</button>
@@ -562,36 +449,26 @@ export default function LpDetailPage() {
 			</div>
 
 			{/* 댓글 입력 */}
-			<div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem" }}>
+			<div className="flex gap-2 mb-6">
 				<input
 					value={commentText}
 					onChange={(e) => setCommentText(e.target.value)}
 					onKeyDown={(e) => {
-						if (e.key === "Enter") handleCommentSubmit();
+						if (e.key === "Enter" && commentText.trim())
+							submitComment(commentText.trim());
 					}}
 					placeholder="댓글을 입력해주세요..."
-					style={{
-						flex: 1,
-						padding: "0.6rem 1rem",
-						borderRadius: "6px",
-						border: "1px solid #d1d5db",
-						fontSize: "0.9rem",
-					}}
+					className="flex-1 px-4 py-[0.6rem] rounded-md border border-gray-300 text-[0.9rem]"
 				/>
 				<button
 					type="button"
-					onClick={handleCommentSubmit}
-					disabled={!commentText.trim() || isSubmittingComment}
-					style={{
-						padding: "0.6rem 1.25rem",
-						borderRadius: "6px",
-						border: "none",
-						background: commentText.trim() ? "#ec4899" : "#e5e7eb",
-						color: commentText.trim() ? "#fff" : "#9ca3af",
-						cursor: commentText.trim() ? "pointer" : "not-allowed",
+					onClick={() => {
+						if (commentText.trim()) submitComment(commentText.trim());
 					}}
+					disabled={!commentText.trim() || isSubmitting}
+					className={`px-5 py-[0.6rem] rounded-md border-0 ${commentText.trim() ? "bg-pink-500 text-white cursor-pointer" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}
 				>
-					{isSubmittingComment ? "등록 중..." : "등록"}
+					{isSubmitting ? "등록 중..." : "작성"}
 				</button>
 			</div>
 
@@ -605,61 +482,106 @@ export default function LpDetailPage() {
 			{/* 댓글 목록 */}
 			{commentsData?.pages
 				.flatMap((page) => page.data)
-				.map((comment) => (
-					<div
-						key={comment.id}
-						style={{ padding: "1rem 0", borderBottom: "1px solid #f3f4f6" }}
-					>
+				.map((comment) => {
+					const isOwn = me?.id === comment.author.id;
+					const isEditing = editingCommentId === comment.id;
+					const isMenuOpen = openMenuId === comment.id;
+
+					return (
 						<div
-							style={{
-								display: "flex",
-								alignItems: "flex-start",
-								justifyContent: "space-between",
-							}}
+							key={comment.id}
+							className="py-4 border-b border-gray-100 relative"
 						>
-							<div
-								style={{
-									display: "flex",
-									alignItems: "center",
-									gap: "0.5rem",
-									marginBottom: "0.4rem",
-								}}
-							>
-								<AvatarCircle name={comment.author.name} size={28} />
-								<span style={{ fontWeight: "bold", fontSize: "0.88rem" }}>
-									{comment.author.name}
-								</span>
-								<span style={{ color: "#9ca3af", fontSize: "0.8rem" }}>
-									{comment.createdAt?.slice(0, 10)}
-								</span>
+							{/* 헤더: 아바타 + 이름 + 날짜 + ... 메뉴 */}
+							<div className="flex items-center justify-between mb-[0.4rem]">
+								<div className="flex items-center gap-2">
+									<AvatarCircle name={comment.author.name} size={28} />
+									<span className="font-bold text-[0.88rem]">
+										{comment.author.name}
+									</span>
+									<span className="text-gray-400 text-[0.8rem]">
+										{comment.createdAt?.slice(0, 10)}
+									</span>
+								</div>
+								{isOwn && (
+									<div className="relative">
+										<button
+											type="button"
+											onClick={() =>
+												setOpenMenuId(isMenuOpen ? null : comment.id)
+											}
+											className="bg-transparent border-0 cursor-pointer text-gray-400 text-[1.1rem] px-[0.4rem] py-[0.2rem] leading-none"
+										>
+											···
+										</button>
+										{isMenuOpen && (
+											<div className="absolute right-0 top-full bg-white border border-gray-200 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.1)] z-10 min-w-[80px] overflow-hidden">
+												<button
+													type="button"
+													onClick={() => {
+														setEditingCommentId(comment.id);
+														setEditingText(comment.content);
+														setOpenMenuId(null);
+													}}
+													className="block w-full px-4 py-2 bg-transparent border-0 cursor-pointer text-left text-[0.88rem] text-[#111]"
+												>
+													수정
+												</button>
+												<button
+													type="button"
+													onClick={() => {
+														removeComment(comment.id);
+														setOpenMenuId(null);
+													}}
+													className="block w-full px-4 py-2 bg-transparent border-0 cursor-pointer text-left text-[0.88rem] text-red-500"
+												>
+													삭제
+												</button>
+											</div>
+										)}
+									</div>
+								)}
 							</div>
-							{me?.id === comment.author.id && (
-								<button
-									type="button"
-									onClick={() => handleCommentDelete(comment.id)}
-									style={{
-										background: "none",
-										border: "none",
-										color: "#9ca3af",
-										cursor: "pointer",
-										fontSize: "0.8rem",
-									}}
-								>
-									삭제
-								</button>
+
+							{/* 댓글 내용 or 인라인 수정 */}
+							{isEditing ? (
+								<div className="flex gap-2 pl-9">
+									<input
+										// biome-ignore lint/a11y/noAutofocus: 수정 모드 진입 시 포커스
+										autoFocus
+										value={editingText}
+										onChange={(e) => setEditingText(e.target.value)}
+										onKeyDown={(e) => {
+											if (e.key === "Enter" && editingText.trim())
+												editComment({
+													commentId: comment.id,
+													content: editingText.trim(),
+												});
+											if (e.key === "Escape") setEditingCommentId(null);
+										}}
+										className="flex-1 px-3 py-[0.4rem] rounded-md border border-gray-300 text-[0.9rem]"
+									/>
+									<button
+										type="button"
+										onClick={() =>
+											editComment({
+												commentId: comment.id,
+												content: editingText.trim(),
+											})
+										}
+										className="bg-transparent border-0 cursor-pointer text-pink-500 text-[1.2rem] px-1"
+									>
+										✓
+									</button>
+								</div>
+							) : (
+								<div className="text-gray-700 text-[0.9rem] pl-9">
+									{comment.content}
+								</div>
 							)}
 						</div>
-						<div
-							style={{
-								color: "#374151",
-								fontSize: "0.9rem",
-								paddingLeft: "2.25rem",
-							}}
-						>
-							{comment.content}
-						</div>
-					</div>
-				))}
+					);
+				})}
 
 			{/* 추가 로딩 스켈레톤 */}
 			{isFetchingNextPage &&
@@ -668,7 +590,7 @@ export default function LpDetailPage() {
 					<SkeletonComment key={i} />
 				))}
 
-			<div ref={sentinelRef} style={{ height: 1 }} />
+			<div ref={sentinelRef} className="h-px" />
 		</div>
 	);
 }

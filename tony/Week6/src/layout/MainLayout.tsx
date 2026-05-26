@@ -1,39 +1,32 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Outlet } from "react-router-dom";
+import useSidebar from "../hooks/useSidebar";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 
 export default function MainLayout() {
-	const [sidebarOpen, setSidebarOpen] = useState(false);
+	const { isOpen, close, toggle } = useSidebar();
 	const sidebarRef = useRef<HTMLDivElement>(null);
 
+	// 사이드바 외부 클릭 시 닫기
 	useEffect(() => {
 		const handleClickOutside = (e: MouseEvent) => {
-			if (
-				sidebarRef.current &&
-				!sidebarRef.current.contains(e.target as Node)
-			) {
-				setSidebarOpen(false);
+			if (sidebarRef.current && !sidebarRef.current.contains(e.target as Node)) {
+				close();
 			}
 		};
-		if (sidebarOpen) {
-			document.addEventListener("mousedown", handleClickOutside);
-		}
+		if (isOpen) document.addEventListener("mousedown", handleClickOutside);
 		return () => document.removeEventListener("mousedown", handleClickOutside);
-	}, [sidebarOpen]);
+	}, [isOpen, close]);
 
 	return (
-		<div
-			style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
-		>
-			<Header onMenuClick={() => setSidebarOpen((v) => !v)} />
-			<div style={{ display: "flex", flex: 1, position: "relative" }}>
+		<div className="flex flex-col min-h-screen">
+			<Header onMenuClick={toggle} />
+			<div className="flex flex-1 relative">
 				<div ref={sidebarRef}>
-					<Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+					<Sidebar isOpen={isOpen} onClose={close} />
 				</div>
-				<main
-					style={{ flex: 1, padding: "1.5rem", overflowY: "auto", minWidth: 0 }}
-				>
+				<main className="flex-1 p-6 overflow-y-auto min-w-0">
 					<Outlet />
 				</main>
 			</div>
