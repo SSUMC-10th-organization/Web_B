@@ -4,15 +4,15 @@ import modalReducer from "../features/modal/modalSlice";
 
 // 1. 저장소
 function createStore() {
-  const store = configureStore({
-    // 2. 리듀서 설정
-    reducer: {
-      cart: cartReducer,
-      modal: modalReducer,
-    },
-  });
+	const store = configureStore({
+		// 2. 리듀서 설정
+		reducer: {
+			cart: cartReducer,
+			modal: modalReducer,
+		},
+	});
 
-  return store;
+	return store;
 }
 
 // store를 활용할 수 있도록 내보내야 함.
