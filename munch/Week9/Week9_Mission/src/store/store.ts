@@ -1,22 +1,24 @@
 import { configureStore } from "@reduxjs/toolkit";
-import cartReducer from "../slices/cartSlice";
+import cartReducer from "../features/cart/cartSlice";
+import modalReducer from "../features/modal/modalSlice";
 
 // 1. 저장소
-function createStroe() {
-	const store = configureStore({
-		// 2. 리듀서 설정
-		reducer: {
-			cart: cartReducer,
-		},
-	});
+function createStore() {
+  const store = configureStore({
+    // 2. 리듀서 설정
+    reducer: {
+      cart: cartReducer,
+      modal: modalReducer,
+    },
+  });
 
-	return store;
+  return store;
 }
 
 // store를 활용할 수 있도록 내보내야 함.
 // 여기서 실행해서 스토어를 빼준다.
 //싱글통패턴
-const store = createStroe();
+const store = createStore();
 
 export default store;
 

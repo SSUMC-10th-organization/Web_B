@@ -4,15 +4,17 @@ import CartList from "./components/CartList";
 import Navbar from "./components/Navbar";
 import PriceBox from "./components/PriceBox";
 import store from "./store/store";
+import Modal from "./components/Modal";
 
 function App() {
-	return (
-		<Provider store={store}>
-			<Navbar />
-			<CartList />
-			<PriceBox />
-		</Provider>
-	);
+  return (
+    <Provider store={store}>
+      <Navbar />
+      <Modal />
+      <CartList />
+      <PriceBox />
+    </Provider>
+  );
 }
 
 export default App;
