@@ -1,22 +1,14 @@
-import { useSelector, useDispatch } from 'react-redux';
-import type { RootState, AppDispatch } from '../store';
-import { closeModal } from '../features/modal/modalSlice';
-import { clearCart, calculateTotals } from '../features/cart/cartSlice';
+import { useCartStore } from '../store/useCartStore';
 
 export default function Modal() {
-  const isOpen = useSelector((state: RootState) => state.modal.isOpen);
-  const dispatch = useDispatch<AppDispatch>();
+  const { isOpen, clearCart, calculateTotals, closeModal } = useCartStore();
 
   if (!isOpen) return null;
 
   const handleConfirm = () => {
-    dispatch(clearCart());
-    dispatch(calculateTotals());
-    dispatch(closeModal());
-  };
-
-  const handleCancel = () => {
-    dispatch(closeModal());
+    clearCart();
+    calculateTotals();
+    closeModal();
   };
 
   return (
@@ -26,7 +18,7 @@ export default function Modal() {
         <p className="text-gray-500 text-center mb-6">모든 음반을 삭제할까요?</p>
         <div className="flex gap-3">
           <button
-            onClick={handleCancel}
+            onClick={closeModal}
             className="flex-1 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-semibold"
           >
             아니요

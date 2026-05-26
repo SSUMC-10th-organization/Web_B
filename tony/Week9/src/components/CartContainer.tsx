@@ -1,19 +1,13 @@
 import { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import type { RootState, AppDispatch } from '../store';
-import { calculateTotals } from '../features/cart/cartSlice';
-import { openModal } from '../features/modal/modalSlice';
+import { useCartStore } from '../store/useCartStore';
 import CartItem from './CartItem';
 
 export default function CartContainer() {
-  const cartItems = useSelector((state: RootState) => state.cart.cartItems);
-  const amount = useSelector((state: RootState) => state.cart.amount);
-  const total = useSelector((state: RootState) => state.cart.total);
-  const dispatch = useDispatch<AppDispatch>();
+  const { cartItems, amount, total, calculateTotals, openModal } = useCartStore();
 
   useEffect(() => {
-    dispatch(calculateTotals());
-  }, [cartItems, dispatch]);
+    calculateTotals();
+  }, [cartItems, calculateTotals]);
 
   if (cartItems.length === 0) {
     return (
@@ -44,7 +38,7 @@ export default function CartContainer() {
       </div>
 
       <button
-        onClick={() => dispatch(openModal())}
+        onClick={openModal}
         className="mt-4 w-full py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-700 font-semibold tracking-wide"
       >
         전체 삭제

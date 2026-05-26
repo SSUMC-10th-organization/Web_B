@@ -1,11 +1,7 @@
-import { useSelector } from 'react-redux';
-import type { RootState } from '../store';
+import { useCartStore } from '../store/useCartStore';
 
 export default function Navbar() {
-  // ========================
-  // TODO 9: useSelector로 cart.amount를 가져오세요
-  // ========================
-  const amount = useSelector((state: RootState) => state.cart.amount);
+  const amount = useCartStore((state) => state.amount);
 
   return (
     <nav className="bg-gray-900 text-white px-8 py-4 flex justify-between items-center">

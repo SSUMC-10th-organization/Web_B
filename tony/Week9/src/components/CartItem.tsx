@@ -1,28 +1,26 @@
-import { useDispatch } from 'react-redux';
 import type { CartItem as CartItemType } from '../constants/cartItems';
-import { increase, decrease, removeItem, calculateTotals } from '../features/cart/cartSlice';
-import type { AppDispatch } from '../store';
+import { useCartStore } from '../store/useCartStore';
 
 interface Props {
   item: CartItemType;
 }
 
 export default function CartItem({ item }: Props) {
-  const dispatch = useDispatch<AppDispatch>();
+  const { increase, decrease, removeItem, calculateTotals } = useCartStore();
 
   const handleIncrease = () => {
-    dispatch(increase(item.id));
-    dispatch(calculateTotals());
+    increase(item.id);
+    calculateTotals();
   };
 
   const handleDecrease = () => {
-    dispatch(decrease(item.id));
-    dispatch(calculateTotals());
+    decrease(item.id);
+    calculateTotals();
   };
 
   const handleRemove = () => {
-    dispatch(removeItem(item.id));
-    dispatch(calculateTotals());
+    removeItem(item.id);
+    calculateTotals();
   };
 
   return (
@@ -36,17 +34,11 @@ export default function CartItem({ item }: Props) {
       </div>
 
       <div className="flex items-center gap-1">
-        <button
-          onClick={handleDecrease}
-          className="w-8 h-8 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 font-bold"
-        >
+        <button onClick={handleDecrease} className="w-8 h-8 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 font-bold">
           -
         </button>
         <span className="w-8 text-center font-semibold">{item.amount}</span>
-        <button
-          onClick={handleIncrease}
-          className="w-8 h-8 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 font-bold"
-        >
+        <button onClick={handleIncrease} className="w-8 h-8 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 font-bold">
           +
         </button>
       </div>
