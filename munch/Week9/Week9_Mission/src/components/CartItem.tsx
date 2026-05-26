@@ -1,5 +1,4 @@
-import { decrease, increase } from "../features/cart/cartSlice";
-import { useDispatch } from "../hooks/useCustomRedux";
+import useCartStore from "../hooks/useCartStore";
 import type { Lp } from "../types/cart";
 
 interface CartItemProps {
@@ -7,15 +6,7 @@ interface CartItemProps {
 }
 
 const CartItem = ({ lp }: CartItemProps) => {
-  const dispatch = useDispatch();
-
-  const handleIncreaseCount = () => {
-    dispatch(increase({ id: lp.id }));
-  };
-
-  const handleDecreaseCount = () => {
-    dispatch(decrease({ id: lp.id }));
-  };
+  const { increase, decrease } = useCartStore();
 
   return (
     <div className="flex items-center p-4 border-b border-gray-200">
@@ -32,7 +23,7 @@ const CartItem = ({ lp }: CartItemProps) => {
       <div className="flex items-center">
         <button
           type="button"
-          onClick={handleDecreaseCount}
+          onClick={() => decrease(lp.id)}
           className="px-3 py-1 bg-gray-300 text-gray-800 rounded-l hover:bg-gray-400 cursor-pointer"
         >
           -
@@ -42,7 +33,7 @@ const CartItem = ({ lp }: CartItemProps) => {
         </span>
         <button
           type="button"
-          onClick={handleIncreaseCount}
+          onClick={() => increase(lp.id)}
           className="px-3 py-1 bg-gray-300 text-gray-800 rounded-r hover:bg-gray-400 cursor-pointer"
         >
           +

@@ -1,20 +1,13 @@
-import { clearCart } from "../features/cart/cartSlice";
-import { closeModal } from "../features/modal/modalSlice";
-import { useDispatch, useSelector } from "../hooks/useCustomRedux";
+import useCartStore from "../hooks/useCartStore";
 
 const Modal = () => {
-  const dispatch = useDispatch();
-  const { isOpen } = useSelector((state) => state.modal);
+  const { isOpen, closeModal, clearCart } = useCartStore();
 
   if (!isOpen) return null;
 
-  const handleClose = () => {
-    dispatch(closeModal());
-  };
-
   const handleConfirm = () => {
-    dispatch(clearCart());
-    dispatch(closeModal());
+    clearCart();
+    closeModal();
   };
 
   return (
@@ -24,7 +17,7 @@ const Modal = () => {
         <div className="flex gap-4">
           <button
             type="button"
-            onClick={handleClose}
+            onClick={closeModal}
             className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-100 cursor-pointer"
           >
             아니요
