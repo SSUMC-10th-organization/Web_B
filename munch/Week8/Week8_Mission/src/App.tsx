@@ -1,10 +1,10 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import {
-  createBrowserRouter,
-  Outlet,
-  type RouteObject,
-  RouterProvider,
+	createBrowserRouter,
+	Outlet,
+	type RouteObject,
+	RouterProvider,
 } from "react-router-dom";
 import "./App.css";
 import { ToastProvider } from "./components/Toast";
@@ -18,55 +18,55 @@ import LoginPage from "./pages/LoginPage";
 import LpDetailPage from "./pages/LpDetailPage";
 import MyPage from "./pages/MyPage";
 import NotFoundPage from "./pages/NotFoundPage";
-import SignupPage from "./pages/SignupPage";
 import SearchPage from "./pages/SearchPage";
+import SignupPage from "./pages/SignupPage";
 
 const publicRoutes: RouteObject[] = [
-  {
-    path: "/",
-    element: <HomeLayout />,
-    errorElement: <NotFoundPage />,
-    children: [
-      { index: true, element: <HomePage /> },
-      { path: "login", element: <LoginPage /> },
-      { path: "signup", element: <SignupPage /> },
-      { path: "search", element: <SearchPage /> },
-      { path: "v1/auth/google/callback", element: <GoogleLoginRedirectPage /> },
-    ],
-  },
+	{
+		path: "/",
+		element: <HomeLayout />,
+		errorElement: <NotFoundPage />,
+		children: [
+			{ index: true, element: <HomePage /> },
+			{ path: "login", element: <LoginPage /> },
+			{ path: "signup", element: <SignupPage /> },
+			{ path: "search", element: <SearchPage /> },
+			{ path: "v1/auth/google/callback", element: <GoogleLoginRedirectPage /> },
+		],
+	},
 ];
 
 const protectedRoutes: RouteObject[] = [
-  {
-    path: "/",
-    element: <ProtectedLayout />,
-    errorElement: <NotFoundPage />,
-    children: [
-      { path: "mypage", element: <MyPage /> },
-      { path: "lp/:lpid", element: <LpDetailPage /> },
-    ],
-  },
+	{
+		path: "/",
+		element: <ProtectedLayout />,
+		errorElement: <NotFoundPage />,
+		children: [
+			{ path: "mypage", element: <MyPage /> },
+			{ path: "lp/:lpid", element: <LpDetailPage /> },
+		],
+	},
 ];
 
 const router = createBrowserRouter([
-  {
-    element: (
-      <AuthProvider>
-        <ToastProvider />
-        <Outlet />
-      </AuthProvider>
-    ),
-    children: [...publicRoutes, ...protectedRoutes],
-  },
+	{
+		element: (
+			<AuthProvider>
+				<ToastProvider />
+				<Outlet />
+			</AuthProvider>
+		),
+		children: [...publicRoutes, ...protectedRoutes],
+	},
 ]);
 
 function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
-    </QueryClientProvider>
-  );
+	return (
+		<QueryClientProvider client={queryClient}>
+			<RouterProvider router={router} />
+			{import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+		</QueryClientProvider>
+	);
 }
 
 export default App;
