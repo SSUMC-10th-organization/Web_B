@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../store';
-import { calculateTotals, clearCart } from '../features/cart/cartSlice';
-// import { openModal } from '../features/modal/modalSlice';
+import { calculateTotals } from '../features/cart/cartSlice';
+import { openModal } from '../features/modal/modalSlice';
 import CartItem from './CartItem';
 
 export default function CartContainer() {
@@ -43,9 +43,8 @@ export default function CartContainer() {
         </div>
       </div>
 
-      {/* 미션 2: clearCart → openModal로 변경 예정 */}
       <button
-        onClick={() => dispatch(clearCart())}
+        onClick={() => dispatch(openModal())}
         className="mt-4 w-full py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-700 font-semibold tracking-wide"
       >
         전체 삭제

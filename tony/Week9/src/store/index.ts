@@ -1,11 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
 import cartReducer from '../features/cart/cartSlice';
-// import modalReducer from '../features/modal/modalSlice';
+// TODO: modalReducer import 추가
+import modalReducer from '../features/modal/modalSlice';
 
 export const store = configureStore({
   reducer: {
     cart: cartReducer,
-    // modal: modalReducer,
+    // TODO: modal reducer 등록
+    modal: modalReducer,
   },
 });
 
