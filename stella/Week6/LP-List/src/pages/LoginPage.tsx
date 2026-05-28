@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import useForm from "../hooks/useForm";
 import { type UserSigninformation, validateSignin } from "../utils/validate";
@@ -7,12 +7,15 @@ import { useEffect } from "react";
 export const LoginPage = () => {
   const { login, accessToken } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     if (accessToken) {
-      navigate("/");
+      const redirect = searchParams.get("redirect");
+      navigate(redirect ?? "/", { replace: true });
     }
-  }, [navigate, accessToken]);
+  }, [navigate, accessToken, searchParams]);
+
   const { values, errors, touched, getInputProps } =
     useForm<UserSigninformation>({
       initialValue: {
@@ -24,7 +27,6 @@ export const LoginPage = () => {
 
   const handleSubmit = async () => {
     await login(values);
-    navigate("/");
   };
 
   const handleGoogleLogin = () => {
@@ -35,6 +37,7 @@ export const LoginPage = () => {
   const isDisabled =
     Object.values(errors || {}).some((error) => error.length > 0) ||
     Object.values(values).some((value) => value === "");
+
   return (
     <div className="flex flex-col items-center justify-center h-full gap-4">
       <input
