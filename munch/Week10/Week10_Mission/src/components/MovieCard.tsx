@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { useNavigate } from "react-router-dom";
 import type { Movie } from "../types/movie";
 
 interface MovieCardProps {
@@ -7,13 +8,19 @@ interface MovieCardProps {
 }
 
 const MovieCard = ({ movie, onClick }: MovieCardProps) => {
+  const navigate = useNavigate();
   const imageBaseUrl = "https://image.tmdb.org/t/p/w500";
   const fallbackImage = "https://via.placeholder.com/500x750?text=No+Image";
+
+  const handleClick = () => {
+    onClick(movie);
+    navigate(`/movies/${movie.id}`);
+  };
 
   return (
     <div
       className="cursor-pointer overflow-hidden rounded-lg bg-white shadow-md transition-all hover:shadow-xl hover:-translate-y-1"
-      onClick={() => onClick(movie)}
+      onClick={handleClick}
     >
       <div className="relative h-80 overflow-hidden">
         <img
