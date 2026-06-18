@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Lp } from "../apis/lp";
 
@@ -5,7 +6,9 @@ interface LpCardProps {
 	lp: Lp;
 }
 
-export default function LpCard({ lp }: LpCardProps) {
+// [최적화 1] memo: 부모(HomePage)가 showModal 상태 변경으로 리렌더될 때
+// lp props가 바뀌지 않은 카드들은 리렌더를 건너뜀
+const LpCard = memo(function LpCard({ lp }: LpCardProps) {
 	const navigate = useNavigate();
 
 	return (
@@ -43,4 +46,6 @@ export default function LpCard({ lp }: LpCardProps) {
 			</div>
 		</div>
 	);
-}
+});
+
+export default LpCard;

@@ -1,12 +1,12 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getLps, type Lp } from "../apis/lp";
 import AddLpModal from "../components/AddLpModal";
 import LpCard from "../components/LpCard";
 import SkeletonCard from "../components/SkeletonCard";
 import useThrottle from "../hooks/useThrottle";
 
-const THROTTLE_INTERVAL = 3000;
+const THROTTLE_INTERVAL = 5000;
 
 type LpPage = { data: Lp[]; hasNext: boolean; nextCursor: number | null };
 
@@ -55,11 +55,27 @@ export default function HomePage() {
 		return () => window.removeEventListener("scroll", handleScroll);
 	}, []);
 
+	// [최적화 2] useCallback: AddLpModal의 onClose prop으로 넘기는 함수 참조 안정화
+	// HomePage가 리렌더돼도 이 함수는 새로 생성되지 않음
+	const handleOpenModal = useCallback(() => setShowModal(true), []);
+	const handleCloseModal = useCallback(() => setShowModal(false), []);
+
+	// [최적화 3] useMemo: data가 바뀔 때만 flatMap 실행
+	// showModal 변경 등으로 리렌더될 때 불필요한 배열 재생성 방지
+	const lps = useMemo(
+		() => data?.pages.flatMap((page) => page.data) ?? [],
+		[data],
+	);
+
 	// throttledScrollY 기준으로만 하단 감지 → 3초에 한 번만 fetchNextPage 호출
 	useEffect(() => {
 		const scrollBottom = throttledScrollY + window.innerHeight;
 		const pageBottom = document.documentElement.scrollHeight - 100;
-		if (scrollBottom >= pageBottom && hasNextPageRef.current && !isFetchingRef.current) {
+		if (
+			scrollBottom >= pageBottom &&
+			hasNextPageRef.current &&
+			!isFetchingRef.current
+		) {
 			fetchNextPage();
 		}
 	}, [throttledScrollY, fetchNextPage]);
@@ -111,11 +127,9 @@ export default function HomePage() {
 			{/* LP 그리드 */}
 			{!isLoading && (
 				<div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-3">
-					{data?.pages
-						.flatMap((page) => page.data)
-						.map((lp) => (
-							<LpCard key={lp.id} lp={lp} />
-						))}
+					{lps.map((lp) => (
+						<LpCard key={lp.id} lp={lp} />
+					))}
 				</div>
 			)}
 
@@ -134,13 +148,13 @@ export default function HomePage() {
 			{/* 플로팅 버튼 */}
 			<button
 				type="button"
-				onClick={() => setShowModal(true)}
+				onClick={handleOpenModal}
 				className="fixed bottom-8 right-8 w-12 h-12 rounded-full bg-pink-500 text-white text-2xl border-0 cursor-pointer flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.2)]"
 			>
 				+
 			</button>
 
-			{showModal && <AddLpModal onClose={() => setShowModal(false)} />}
+			{showModal && <AddLpModal onClose={handleCloseModal} />}
 		</div>
 	);
 }
