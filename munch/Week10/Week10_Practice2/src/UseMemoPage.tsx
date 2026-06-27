@@ -5,7 +5,7 @@ import { findPrimeNumbers } from "./utils/math";
 export default function UseMemoPage() {
   console.log("rerender");
 
-  const [limit, setLimit] = useState<number>(10000);
+  const [limit, setLimit] = useState<number>(100);
   const [text, setText] = useState("");
 
   const handleChangeText = (text: string) => {
